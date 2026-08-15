@@ -2,6 +2,7 @@ package cetam.projeto01grupo03.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "multas")
@@ -9,31 +10,80 @@ public class Multa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idMulta")
-    private Integer idMulta;
-
-    @OneToOne
-    @JoinColumn(name = "idEmprestimo", nullable = false)
-    private Emprestimo emprestimo;
+    @Column(name = "id_multa")
+    private Long id;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
+
+    @Column(name = "data_geracao")
+    private LocalDate dataGeracao;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private StatusMulta status;
 
+    @OneToOne
+    @JoinColumn(name = "id_emprestimo", nullable = false)
+    private Emprestimo emprestimo;
+
     public Multa() {}
 
-    public Integer getIdMulta() { return idMulta; }
-    public void setIdMulta(Integer idMulta) { this.idMulta = idMulta; }
+    public Multa(Long id, BigDecimal valor, LocalDate dataGeracao, StatusMulta status, Emprestimo emprestimo) {
+        this.id = id;
+        this.valor = valor;
+        this.dataGeracao = dataGeracao;
+        this.status = status;
+        this.emprestimo = emprestimo;
+    }
 
-    public Emprestimo getEmprestimo() { return emprestimo; }
-    public void setEmprestimo(Emprestimo emprestimo) { this.emprestimo = emprestimo; }
+    public Long getId() {
+        return id;
+    }
 
-    public BigDecimal getValor() { return valor; }
-    public void setValor(BigDecimal valor) { this.valor = valor; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public StatusMulta getStatus() { return status; }
-    public void setStatus(StatusMulta status) { this.status = status; }
+    public BigDecimal getValor() {
+        return valor;
+    }
+
+    public void setValor(BigDecimal valor) {
+        this.valor = valor;
+    }
+
+    public LocalDate getDataGeracao() {
+        return dataGeracao;
+    }
+
+    public void setDataGeracao(LocalDate dataGeracao) {
+        this.dataGeracao = dataGeracao;
+    }
+
+    public StatusMulta getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusMulta status) {
+        this.status = status;
+    }
+
+    public Emprestimo getEmprestimo() {
+        return emprestimo;
+    }
+
+    public void setEmprestimo(Emprestimo emprestimo) {
+        this.emprestimo = emprestimo;
+    }
+
+    @Override
+    public String toString() {
+        return "Multa{" +
+                "id=" + id +
+                ", valor=" + valor +
+                ", dataGeracao=" + dataGeracao +
+                ", status=" + status +
+                '}';
+    }
 }
