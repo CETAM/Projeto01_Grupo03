@@ -30,14 +30,6 @@ public class Aluno {
 
     public Aluno() {}
 
-    public Aluno(Long id, String nome, String matricula, String email, Boolean ativo) {
-        this.id = id;
-        this.nome = nome;
-        this.matricula = matricula;
-        this.email = email;
-        this.ativo = ativo;
-    }
-
     public Aluno(Long id, String nome, String matricula, String email, Boolean ativo, List<Emprestimo> emprestimos) {
         this.id = id;
         this.nome = nome;
@@ -46,6 +38,7 @@ public class Aluno {
         this.ativo = ativo;
         this.emprestimos = emprestimos;
     }
+
 
     public Long getId() {
         return id;

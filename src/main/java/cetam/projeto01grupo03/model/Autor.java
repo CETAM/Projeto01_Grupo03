@@ -21,16 +21,12 @@ public class Autor {
 
     public Autor() {}
 
-    public Autor(Long id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
-
     public Autor(Long id, String nome, List<Livro> livros) {
         this.id = id;
         this.nome = nome;
         this.livros = livros;
     }
+
 
     public Long getId() {
         return id;

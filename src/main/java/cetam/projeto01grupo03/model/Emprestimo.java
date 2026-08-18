@@ -38,16 +38,6 @@ public class Emprestimo {
 
     public Emprestimo() {}
 
-    public Emprestimo(Long id, Aluno aluno, Livro livro, LocalDate dataEmprestimo, LocalDate dataPrevisaoDevolucao, LocalDate dataDevolucao, StatusEmprestimo status) {
-        this.id = id;
-        this.aluno = aluno;
-        this.livro = livro;
-        this.dataEmprestimo = dataEmprestimo;
-        this.dataPrevisaoDevolucao = dataPrevisaoDevolucao;
-        this.dataDevolucao = dataDevolucao;
-        this.status = status;
-    }
-
     public Emprestimo(Long id, Aluno aluno, Livro livro, LocalDate dataEmprestimo, LocalDate dataPrevisaoDevolucao, LocalDate dataDevolucao, StatusEmprestimo status, Multa multa) {
         this.id = id;
         this.aluno = aluno;
@@ -58,6 +48,7 @@ public class Emprestimo {
         this.status = status;
         this.multa = multa;
     }
+
 
     public Long getId() {
         return id;

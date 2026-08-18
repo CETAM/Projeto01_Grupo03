@@ -38,16 +38,6 @@ public class Livro {
 
     public Livro() {}
 
-    public Livro(Long id, String titulo, String isbn, Integer ano, Boolean disponivel, Autor autor, Editora editora) {
-        this.id = id;
-        this.titulo = titulo;
-        this.isbn = isbn;
-        this.ano = ano;
-        this.disponivel = disponivel;
-        this.autor = autor;
-        this.editora = editora;
-    }
-
     public Livro(Long id, String titulo, String isbn, Integer ano, Boolean disponivel, Autor autor, Editora editora, List<Emprestimo> emprestimos) {
         this.id = id;
         this.titulo = titulo;
@@ -58,6 +48,7 @@ public class Livro {
         this.editora = editora;
         this.emprestimos = emprestimos;
     }
+
 
     public Long getId() {
         return id;
