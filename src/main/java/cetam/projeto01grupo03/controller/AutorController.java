@@ -1,51 +1,85 @@
 package cetam.projeto01grupo03.controller;
 
 import cetam.projeto01grupo03.model.Autor;
-import cetam.projeto01grupo03.repository.AutorRepository;
 import cetam.projeto01grupo03.service.AutorService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/autores")
 public class AutorController {
 
-    @Autowired
-    private final AutorRepository autorRepository;
     private final AutorService autorService;
 
-    public AutorController(AutorRepository autorRepository, AutorService autorService) {
-        this.autorRepository = autorRepository;
+    public AutorController(AutorService autorService) {
         this.autorService = autorService;
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Autor>> listaTodos(){
-        List<Autor> autor = autorRepository.findAll();
-        if (!autor.isEmpty()){
-            return new ResponseEntity<>(autor, HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    
+    // Listagem de autores com suporte a filtro por nome na mesma rota.
+    @GetMapping
+    public String listar(@RequestParam(name = "nome", required = false) String nome, Model model) {
+        model.addAttribute("autores", autorService.listarTodos(nome));
+        model.addAttribute("nome", nome);
+        return "autores/listar";
+    }
+
+    
+    // Exibe formulário para novo autor
+    @GetMapping("/novo")
+    public String exibirFormularioCadastro(Model model) {
+        model.addAttribute("autor", new Autor());
+        return "autores/formulario";
+    }
+
+    
+    //Exibe formulário para editar autor existente.
+    @GetMapping("/editar/{id}")
+    public String exibirFormularioEdicao(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Autor autor = autorService.buscarPorId(id);
+            model.addAttribute("autor", autor);
+            return "autores/formulario";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Autor não encontrado.");
+            return "redirect:/autores";
         }
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Autor> criar(@RequestBody Autor autor){
-        try {
-            Autor autorSalvo = autorService.criar(autor);
-            return new ResponseEntity<>(autorSalvo, HttpStatus.CREATED);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao cadastrar autor: "+ e.getMessage());
+    
+    // Salva ou atualiza o autor com validação do campo obrigatório nome.
+    @PostMapping("/salvar")
+    public String salvar(@ModelAttribute("autor") Autor autor,
+                         Model model,
+                         RedirectAttributes redirectAttributes) {
+        if (autor.getNome() == null || autor.getNome().trim().isEmpty()) {
+            model.addAttribute("mensagemErro", "O nome do autor é obrigatório.");
+            return "autores/formulario";
         }
+
+        autorService.salvar(autor);
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Autor salvo com sucesso!");
+        return "redirect:/autores";
+    }
+
+    
+    //Exclui autor e trata restrição de chave estrangeira via DataIntegrityViolationException.
+    @GetMapping("/excluir/{id}")
+    public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        try {
+            autorService.excluir(id);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Autor excluído com sucesso!");
+        } catch (DataIntegrityViolationException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não é possível excluir o autor pois existem livros vinculados a ele.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao excluir o autor: " + e.getMessage());
+        }
+        return "redirect:/autores";
     }
 }
+
+
+

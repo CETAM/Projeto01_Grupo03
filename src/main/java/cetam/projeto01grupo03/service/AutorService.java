@@ -15,11 +15,25 @@ public class AutorService {
         this.autorRepository = autorRepository;
     }
 
-    public List<Autor> listarTodos (){
+    public List<Autor> listarTodos(String nome) {
+        if (nome != null && !nome.isBlank()) {
+            return autorRepository.findByNomeContainingIgnoreCase(nome.trim());
+        }
         return autorRepository.findAll();
     }
 
-    public Autor criar(Autor autor){
+    public Autor buscarPorId(Long id) {
+        return autorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Autor não encontrado com o ID: " + id));
+    }
+
+    public Autor salvar(Autor autor) {
         return autorRepository.save(autor);
     }
+
+    public void excluir(Long id) {
+        autorRepository.deleteById(id);
+    }
 }
+
+
