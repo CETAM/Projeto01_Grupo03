@@ -21,16 +21,12 @@ public class Editora {
 
     public Editora() {}
 
-    public Editora(Long id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
-
     public Editora(Long id, String nome, List<Livro> livros) {
         this.id = id;
         this.nome = nome;
         this.livros = livros;
     }
+
 
     public Long getId() {
         return id;
