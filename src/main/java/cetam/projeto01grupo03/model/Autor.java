@@ -10,8 +10,8 @@ public class Autor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idAutor")
-    private Integer idAutor;
+    @Column(name = "id_autor")
+    private Long id;
 
     @Column(nullable = false, length = 200)
     private String nome;
@@ -21,17 +21,42 @@ public class Autor {
 
     public Autor() {}
 
-    public Autor(Integer idAutor, String nome) {
-        this.idAutor = idAutor;
+    public Autor(Long id, String nome, List<Livro> livros) {
+        this.id = id;
+        this.nome = nome;
+        this.livros = livros;
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
-    public Integer getIdAutor() { return idAutor; }
-    public void setIdAutor(Integer idAutor) { this.idAutor = idAutor; }
+    public List<Livro> getLivros() {
+        return livros;
+    }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public void setLivros(List<Livro> livros) {
+        this.livros = livros;
+    }
 
-    public List<Livro> getLivros() { return livros; }
-    public void setLivros(List<Livro> livros) { this.livros = livros; }
+    @Override
+    public String toString() {
+        return "Autor{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                '}';
+    }
 }
