@@ -2,6 +2,7 @@ package cetam.projeto01grupo03.controller;
 
 import cetam.projeto01grupo03.model.Livro;
 import cetam.projeto01grupo03.service.AutorService;
+import cetam.projeto01grupo03.service.EditoraService;
 import cetam.projeto01grupo03.service.LivroService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -15,22 +16,28 @@ public class LivroController {
 
     private final LivroService livroService;
     private final AutorService autorService;
+    private final EditoraService editoraService;
 
-    public LivroController(LivroService livroService, AutorService autorService) {
+    public LivroController(LivroService livroService, AutorService autorService, EditoraService editoraService) {
         this.livroService = livroService;
         this.autorService = autorService;
+        this.editoraService = editoraService;
     }
 
     @GetMapping
-    public String listar(@RequestParam(name = "nome", required = false) String nome, Model model){
-        model.addAttribute("livro", livroService.listarTodos(nome));
-        model.addAttribute("nome", nome);
+    public String listar(@RequestParam(name = "nome", required = false) String titulo, Model model){
+        model.addAttribute("livro", livroService.listarTodos(titulo));
+        model.addAttribute("titulo", titulo);
+        model.addAttribute("autores", autorService.listarTodos(null));
+        model.addAttribute("editoras", editoraService.listarTodas(null));
         return "livro/listar";
     }
 
     @GetMapping("/novo")
     public String exibirFormularioCadastro(Model model){
-        model.addAttribute("ivro", new Livro());
+        model.addAttribute("livro", new Livro());
+        model.addAttribute("autores", autorService.listarTodos(null));
+        model.addAttribute("editoras", editoraService.listarTodas(null));
         return "livros/formulario";
     }
 
@@ -39,6 +46,8 @@ public class LivroController {
         try{
             Livro livro = livroService.buscarPorId(id);
             model.addAttribute("livro, livro");
+            model.addAttribute("autores", autorService.listarTodos(null));
+            model.addAttribute("editoras", editoraService.listarTodas(null));
             return "livros/formulario";
         }catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Livro não encontrado.");
@@ -52,11 +61,25 @@ public class LivroController {
                          RedirectAttributes redirectAttributes){
         if (livro.getTitulo() == null || livro.getTitulo().trim().isEmpty()){
             model.addAttribute("mensagemErro", "O titulo do livro é obrigatório");
+            model.addAttribute("autores", autorService.listarTodos(null));
+            model.addAttribute("editora", editoraService.listarTodas(null));
             return "livros/formulario";
         }
 
         livroService.salvar(livro);
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Livro salvo com sucesso!");
+        return "redirect:/livros";
+    }
+
+    @GetMapping("/disponibilidade/{id}")
+    public String alternarDisponibilidade(@PathVariable("id") Long id, RedirectAttributes redirectAttributes){
+        try {
+            Livro livro = livroService.alternarDisponibilidade(id);
+            String status = Boolean.TRUE.equals(livro.getDisponivel()) ? "disponível" : "indisponível";
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Livro marcado como" + status + "!");
+        }catch (Exception e){
+            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao alterar disponilibidade do livro: " + e.getMessage());
+        }
         return "redirect:/livros";
     }
 
@@ -66,10 +89,10 @@ public class LivroController {
             autorService.excluir(id);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Livro excluído com sucesso!");
         }catch (DataIntegrityViolationException e){
-            redirectAttributes.addFlashAttribute("mensagemErro", "Não é possível excluir o livro");
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não é possível excluir o livro pois existem empréstimos vinculados a ele");
         }catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao excluir o livro" + e.getMessage());
         }
-        return "redirect:/autores";
+        return "redirect:/livros";
     }
 }
