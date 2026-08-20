@@ -10,13 +10,20 @@ CREATE TABLE IF NOT EXISTS autores (
     nome VARCHAR(200) NOT NULL
 );
 
--- 2. Tabela: editoras
+-- 2. Tabela: categorias
+CREATE TABLE IF NOT EXISTS categorias (
+    id_categoria BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao VARCHAR(255),
+)
+
+-- 3. Tabela: editoras
 CREATE TABLE IF NOT EXISTS editoras (
     id_editora BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(200) NOT NULL
 );
 
--- 3. Tabela: alunos
+-- 4. Tabela: alunos
 CREATE TABLE IF NOT EXISTS alunos (
     id_aluno BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(200) NOT NULL,
@@ -25,20 +32,23 @@ CREATE TABLE IF NOT EXISTS alunos (
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- 4. Tabela: livros
+-- 5. Tabela: livros
 CREATE TABLE IF NOT EXISTS livros (
     id_livro BIGINT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
     isbn VARCHAR(20) UNIQUE,
     ano INT NOT NULL,
+    quantidade_exemplares INT NOT NULL DEFAULT 1,
     disponivel BOOLEAN NOT NULL DEFAULT TRUE,
     id_autor BIGINT NOT NULL,
     id_editora BIGINT NOT NULL,
+    id_categoria BIGINT,
     CONSTRAINT fk_livro_autor FOREIGN KEY (id_autor) REFERENCES autores(id_autor),
-    CONSTRAINT fk_livro_editora FOREIGN KEY (id_editora) REFERENCES editoras(id_editora)
+    CONSTRAINT fk_livro_editora FOREIGN KEY (id_editora) REFERENCES editoras(id_editora),
+    CONSTRAINT fk_livros_categorias FOREIGN KEY (id_categoria) REFERENCES categorias (id_categoria) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- 5. Tabela: emprestimos
+-- 6. Tabela: emprestimos
 CREATE TABLE IF NOT EXISTS emprestimos (
     id_emprestimo BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_aluno BIGINT NOT NULL,
@@ -52,7 +62,7 @@ CREATE TABLE IF NOT EXISTS emprestimos (
     CONSTRAINT chk_status_emprestimo CHECK (status IN ('ATIVO', 'DEVOLVIDO', 'ATRASADO'))
 );
 
--- 6. Tabela: multas
+-- 7. Tabela: multas
 CREATE TABLE IF NOT EXISTS multas (
     id_multa BIGINT AUTO_INCREMENT PRIMARY KEY,
     valor DECIMAL(10, 2) NOT NULL,
