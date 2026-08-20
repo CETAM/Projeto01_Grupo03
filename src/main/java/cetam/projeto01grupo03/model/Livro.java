@@ -1,14 +1,15 @@
 package cetam.projeto01grupo03.model;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "livros")
 public class Livro {
 
-    @Id
+     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_livro")
     private Long id;
@@ -23,6 +24,9 @@ public class Livro {
     private Integer ano;
 
     @Column(nullable = false)
+    private Integer quantidadeExemplares = 1;
+
+    @Column(nullable = false)
     private Boolean disponivel = true;
 
     @ManyToOne
@@ -33,21 +37,24 @@ public class Livro {
     @JoinColumn(name = "id_editora", nullable = false)
     private Editora editora;
 
-    @OneToMany(mappedBy = "livro", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "livro")
     private List<Emprestimo> emprestimos = new ArrayList<>();
+
 
     public Livro() {}
 
-    public Livro(Long id, String titulo, String isbn, Integer ano, Boolean disponivel, Autor autor, Editora editora, List<Emprestimo> emprestimos) {
+    public Livro(Long id, String titulo, String isbn, Integer ano, Integer quantidadeExemplares, Boolean disponivel, Autor autor, Editora editora, List<Emprestimo> emprestimos) {
         this.id = id;
         this.titulo = titulo;
         this.isbn = isbn;
         this.ano = ano;
-        this.disponivel = disponivel;
+        this.quantidadeExemplares = quantidadeExemplares != null ? quantidadeExemplares : 1;
+        this.disponivel = disponivel != null ? disponivel : true;
         this.autor = autor;
         this.editora = editora;
         this.emprestimos = emprestimos;
     }
+
 
 
     public Long getId() {
@@ -82,9 +89,21 @@ public class Livro {
         this.ano = ano;
     }
 
+    public Integer getQuantidadeExemplares() {
+        return quantidadeExemplares;
+    }
+
+    public void setQuantidadeExemplares(Integer quantidadeExemplares) {
+        this.quantidadeExemplares = quantidadeExemplares;
+        if (this.quantidadeExemplares != null && this.quantidadeExemplares <= 0) {
+            this.disponivel = false;
+        }
+    }
+
     public Boolean getDisponivel() {
         return disponivel;
     }
+
 
     public Boolean isDisponivel() {
         return disponivel;

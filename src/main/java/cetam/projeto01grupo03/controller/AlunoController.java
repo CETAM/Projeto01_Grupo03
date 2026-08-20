@@ -43,7 +43,7 @@ public class AlunoController {
             return "alunos/formulario";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Aluno não encontrando. ");
-            return "redirect:/autores";
+            return "redirect:/alunos";
         }
     }
 
@@ -55,11 +55,27 @@ public class AlunoController {
             return "alunos/formulario";
         }
 
+        if (aluno.getMatricula() == null || aluno.getMatricula().trim().isEmpty()) {
+            model.addAttribute("mensagemErro", "A matrícula do aluno é obrigatória.");
+            return "alunos/formulario";
+        }
+
         alunoService.salvar(aluno);
         redirectAttributes.addFlashAttribute("menssagemSucesso", "Aluno salvo com sucesso!");
         return "redirect:/Alunos";
     }
 
+    @GetMapping("/status/{id}")
+    public String alternarStatus(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Aluno aluno = alunoService.alternarStatus(id);
+            String status = Boolean.TRUE.equals(aluno.getAtivo()) ? "ativado" : "inativado";
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno" + status + "com sucesso!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao alterar status do aluno: " + e.getMessage());
+        }
+        return "redirect:/alunos";
+    }
 
     @GetMapping("/excluir/{id}")
     public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
