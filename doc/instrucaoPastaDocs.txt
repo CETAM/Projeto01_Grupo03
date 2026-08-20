@@ -1,3 +1,0 @@
-Salvar na pasta doc os arquivos .docx utilizandos para o desenvolvimento do:
-1. RAP Relatório de Atividades Práticas. 
-2. DRS Documento de Requisitos de Software
