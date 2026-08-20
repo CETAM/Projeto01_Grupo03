@@ -27,7 +27,7 @@ public class AlunoService {
         return alunoRepository.findAll();
     }
 
-    public List<Aluno> lstarAtivos() {
+    public List<Aluno> listarAtivos() {
         List<Aluno> ativos = alunoRepository.findByAtivoTrue();
         if (ativos.isEmpty()) {
             return alunoRepository.findAll().stream()
