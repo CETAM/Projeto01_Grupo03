@@ -78,6 +78,8 @@ public class Aluno {
 
     public Boolean isAtivo() {
         return ativo;
+
+
     }
 
     public void setAtivo(Boolean ativo) {
