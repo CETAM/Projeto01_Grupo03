@@ -1,9 +1,15 @@
 package cetam.projeto01grupo03.service;
 
 import cetam.projeto01grupo03.model.Multa;
+import cetam.projeto01grupo03.model.StatusMulta;
 import cetam.projeto01grupo03.repository.MultaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -38,8 +44,15 @@ public class MultaService {
             throw new IllegalStateException("Esta multa já foi liquidada anteriormente.");
         }
         multa.setStatus(StatusMulta.PAGO);
-        multa.setDataPagamento(LocalDate.now());
+        multa.setDataGeracao(LocalDate.now());
         return multaRepository.save(multa);
+    }
+
+    public BigDecimal calcularTotalPendente() {
+        return multaRepository.findByStatus(StatusMulta.PENDENTE).stream()
+                .map(Multa::getValor)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal calcularTotalRecebido() {

@@ -37,13 +37,17 @@ public class Livro {
     @JoinColumn(name = "id_editora", nullable = false)
     private Editora editora;
 
+    @ManyToOne
+    @JoinColumn(name = "id_categoria")
+    private Categoria categoria;
+
     @OneToMany(mappedBy = "livro")
     private List<Emprestimo> emprestimos = new ArrayList<>();
 
 
     public Livro() {}
 
-    public Livro(Long id, String titulo, String isbn, Integer ano, Integer quantidadeExemplares, Boolean disponivel, Autor autor, Editora editora, List<Emprestimo> emprestimos) {
+    public Livro(Long id, String titulo, String isbn, Integer ano, Integer quantidadeExemplares, Boolean disponivel, Autor autor, Editora editora, Categoria categoria, List<Emprestimo> emprestimos) {
         this.id = id;
         this.titulo = titulo;
         this.isbn = isbn;
@@ -52,6 +56,7 @@ public class Livro {
         this.disponivel = disponivel != null ? disponivel : true;
         this.autor = autor;
         this.editora = editora;
+        this.categoria = categoria;
         this.emprestimos = emprestimos;
     }
 
@@ -127,6 +132,14 @@ public class Livro {
 
     public void setEditora(Editora editora) {
         this.editora = editora;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
     public List<Emprestimo> getEmprestimos() {

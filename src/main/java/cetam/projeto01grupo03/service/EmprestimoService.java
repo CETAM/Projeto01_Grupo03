@@ -1,9 +1,6 @@
 package cetam.projeto01grupo03.service;
 
-import cetam.projeto01grupo03.model.Aluno;
-import cetam.projeto01grupo03.model.Emprestimo;
-import cetam.projeto01grupo03.model.Livro;
-import cetam.projeto01grupo03.model.StatusEmprestimo;
+import cetam.projeto01grupo03.model.*;
 import cetam.projeto01grupo03.repository.AlunoRepository;
 import cetam.projeto01grupo03.repository.EmprestimoRepository;
 import cetam.projeto01grupo03.repository.LivroRepository;
@@ -35,7 +32,7 @@ public class EmprestimoService {
     }
 
     @Transactional
-    public List<Emprestimo> ListarTodos(StatusEmprestimo status) {
+    public List<Emprestimo> listarTodos(StatusEmprestimo status) {
         List<Emprestimo> lista = emprestimoRepository.findAll();
         LocalDate hoje = LocalDate.now();
         for(Emprestimo emp : lista) {
@@ -107,7 +104,7 @@ public class EmprestimoService {
 
     @Transactional
     public  Emprestimo renovarEmprestimo(Long id) {
-        Emprestimo emprestimo buscarPorId(id);
+        Emprestimo emprestimo = buscarPorId(id);
 
         if (emprestimo.getStatus() == StatusEmprestimo.DEVOLVIDO) {
             throw new IllegalStateException("Não é possível renovar um empréstimo já devolvido.");
@@ -134,7 +131,7 @@ public class EmprestimoService {
         emprestimo.setDataDevolucao(dataDevolucao);
 
         if (dataDevolucao.isAfter(emprestimo.getDataPrevisaoDevolucao())) {
-            long diasAtraso = ChronoUnit.DAYS.between(emprestimo.getDataPrevisaoDevolucao(), dataDevolucao);]
+            long diasAtraso = ChronoUnit.DAYS.between(emprestimo.getDataPrevisaoDevolucao(), dataDevolucao);
             BigDecimal valorMulta = VALOR_MULTA_POR_DIA.multiply(BigDecimal.valueOf(diasAtraso));
 
             Multa multa = new Multa();
@@ -149,7 +146,7 @@ public class EmprestimoService {
             emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
         }
 
-        Livro livro =  emprestimo.getAtivo();
+        Livro livro =  emprestimo.getLivro();
         if (livro != null) {
             int qtdAtual = livro.getQuantidadeExemplares() != null ? livro.getQuantidadeExemplares() : 0;
             livro.setQuantidadeExemplares(qtdAtual + 1);
