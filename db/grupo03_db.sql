@@ -1,8 +1,8 @@
 -- BANCO DE DADOS BIBLIOTECA_DB
 -- Projeto01_Grupo03 - CETAM
 
-CREATE DATABASE IF NOT EXISTS biblioteca_db;
-USE biblioteca_db;
+CREATE DATABASE IF NOT EXISTS grupo03_db;
+USE grupo03_db;
 
 -- 1. Tabela: autores
 CREATE TABLE IF NOT EXISTS autores (
