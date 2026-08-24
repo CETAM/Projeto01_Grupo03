@@ -4,9 +4,9 @@ import cetam.projeto01grupo03.model.*;
 import cetam.projeto01grupo03.repository.AlunoRepository;
 import cetam.projeto01grupo03.repository.EmprestimoRepository;
 import cetam.projeto01grupo03.repository.LivroRepository;
-import jakarta.transaction.Status;
-import jakarta.transaction.Transactional;
+import cetam.projeto01grupo03.repository.MultaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,23 +22,26 @@ public class EmprestimoService {
     private final EmprestimoRepository emprestimoRepository;
     private final LivroRepository livroRepository;
     private final AlunoRepository alunoRepository;
+    private final MultaRepository multaRepository;
 
     public EmprestimoService(EmprestimoRepository emprestimoRepository,
                              LivroRepository livroRepository,
-                             AlunoRepository alunoRepository) {
+                             AlunoRepository alunoRepository,
+                             MultaRepository multaRepository) {
         this.emprestimoRepository = emprestimoRepository;
         this.livroRepository = livroRepository;
         this.alunoRepository = alunoRepository;
+        this.multaRepository = multaRepository;
     }
 
     @Transactional
     public List<Emprestimo> listarTodos(StatusEmprestimo status) {
         List<Emprestimo> lista = emprestimoRepository.findAll();
         LocalDate hoje = LocalDate.now();
-        for(Emprestimo emp : lista) {
-            if(emp.getStatus() == StatusEmprestimo.ATIVO && emp.getDataPrevisaoDevolucao() != null && hoje.isAfter(emp.getDataPrevisaoDevolucao())) {
-               emp.setStatus(StatusEmprestimo.ATRASADO);
-               emprestimoRepository.save(emp);
+        for (Emprestimo emp : lista) {
+            if (emp.getStatus() == StatusEmprestimo.ATIVO && emp.getDataPrevisaoDevolucao() != null && hoje.isAfter(emp.getDataPrevisaoDevolucao())) {
+                emp.setStatus(StatusEmprestimo.ATRASADO);
+                emprestimoRepository.save(emp);
             }
         }
         if (status != null) {
@@ -58,6 +61,7 @@ public class EmprestimoService {
         return emprestimoRepository.findAll();
     }
 
+
     public Emprestimo buscarPorId(Long id) {
         return emprestimoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Empréstimo não encontrado com o ID: " + id));
@@ -68,15 +72,30 @@ public class EmprestimoService {
         Aluno aluno = alunoRepository.findById(alunoId)
                 .orElseThrow(() -> new NoSuchElementException("Aluno não encontrado com o ID: " + alunoId));
 
-        if(!Boolean.TRUE.equals(aluno.getAtivo())) {
+        if (!Boolean.TRUE.equals(aluno.getAtivo())) {
             throw new IllegalStateException("O aluno " + aluno.getNome() + " está inativo e não pode realizar empréstimos.");
         }
 
+        // Bloqueio se houver empréstimos em atraso
+        boolean possuiEmprestimoAtrasado = emprestimoRepository.findByAlunoId(alunoId).stream()
+                .anyMatch(e -> e.getStatus() == StatusEmprestimo.ATRASADO ||
+                        (e.getStatus() == StatusEmprestimo.ATIVO && e.getDataPrevisaoDevolucao() != null && LocalDate.now().isAfter(e.getDataPrevisaoDevolucao())));
+        if (possuiEmprestimoAtrasado) {
+            throw new IllegalStateException("O aluno " + aluno.getNome() + " possui empréstimo(s) em atraso e não pode realizar novos empréstimos até regularizar a devolução.");
+        }
+
+        // Bloqueio se houver multas financeiras pendentes de quitação
+        boolean possuiMultasPendentes = multaRepository.existsByEmprestimoAlunoIdAndStatus(alunoId, StatusMulta.PENDENTE);
+        if (possuiMultasPendentes) {
+            throw new IllegalStateException("O aluno " + aluno.getNome() + " possui multas pendentes de pagamento e não pode realizar novos empréstimos.");
+        }
+
+        // Limite máximo de 3 livros simultâneos
         long emprestimosEmAberto = emprestimoRepository.findByAlunoId(alunoId).stream()
                 .filter(e -> e.getStatus() == StatusEmprestimo.ATIVO || e.getStatus() == StatusEmprestimo.ATRASADO)
                 .count();
         if (emprestimosEmAberto >= 3) {
-            throw new IllegalStateException(" O aluno " + aluno.getNome() + " já possui 3 livros em aberto (limite máximo atingido).");
+            throw new IllegalStateException("O aluno " + aluno.getNome() + " já possui 3 livros em aberto (limite máximo atingido).");
         }
 
         Livro livro = livroRepository.findById(livroId)
@@ -90,9 +109,11 @@ public class EmprestimoService {
         Emprestimo emprestimo = new Emprestimo();
         emprestimo.setAluno(aluno);
         emprestimo.setLivro(livro);
-        emprestimo.setDataEmprestimo(LocalDate.now().plusDays(14));
+        emprestimo.setDataEmprestimo(LocalDate.now());
+        emprestimo.setDataPrevisaoDevolucao(LocalDate.now().plusDays(14));
         emprestimo.setStatus(StatusEmprestimo.ATIVO);
 
+        // Decrementa exemplar
         livro.setQuantidadeExemplares(exemplaresDisponiveis - 1);
         if (livro.getQuantidadeExemplares() <= 0) {
             livro.setDisponivel(false);
@@ -103,7 +124,7 @@ public class EmprestimoService {
     }
 
     @Transactional
-    public  Emprestimo renovarEmprestimo(Long id) {
+    public Emprestimo renovarEmprestimo(Long id) {
         Emprestimo emprestimo = buscarPorId(id);
 
         if (emprestimo.getStatus() == StatusEmprestimo.DEVOLVIDO) {
@@ -111,7 +132,7 @@ public class EmprestimoService {
         }
 
         if (LocalDate.now().isAfter(emprestimo.getDataPrevisaoDevolucao())) {
-            throw new IllegalStateException("Não é possível renovar um empréstimo com devolução atrasada. É necessário realizar a devolução e quitar multas pendentes");
+            throw new IllegalStateException("Não é possível renovar um empréstimo com devolução atrasada. É necessário realizar a devolução e quitar multas pendentes.");
         }
 
         emprestimo.setDataPrevisaoDevolucao(emprestimo.getDataPrevisaoDevolucao().plusDays(14));
@@ -146,7 +167,7 @@ public class EmprestimoService {
             emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
         }
 
-        Livro livro =  emprestimo.getLivro();
+        Livro livro = emprestimo.getLivro();
         if (livro != null) {
             int qtdAtual = livro.getQuantidadeExemplares() != null ? livro.getQuantidadeExemplares() : 0;
             livro.setQuantidadeExemplares(qtdAtual + 1);

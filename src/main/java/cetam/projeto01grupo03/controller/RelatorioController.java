@@ -7,8 +7,12 @@ import cetam.projeto01grupo03.model.Emprestimo;
 import cetam.projeto01grupo03.model.Multa;
 import cetam.projeto01grupo03.model.StatusEmprestimo;
 import cetam.projeto01grupo03.model.StatusMulta;
+import cetam.projeto01grupo03.service.PdfReportService;
 import cetam.projeto01grupo03.service.RelatorioService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import  org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,15 +21,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/relatorios")
 public class RelatorioController {
-    private final RelatorioService relatorioService;
 
-    public RelatorioController(RelatorioService relatorioService) {
+    private final RelatorioService relatorioService;
+    private final PdfReportService pdfReportService;
+
+    public RelatorioController(RelatorioService relatorioService, PdfReportService pdfReportService) {
         this.relatorioService = relatorioService;
+        this.pdfReportService = pdfReportService;
     }
 
     @GetMapping
@@ -58,6 +67,28 @@ public class RelatorioController {
         return "relatorios/emprestimos";
     }
 
+    @GetMapping("/emprestimos/pdf")
+    public ResponseEntity<byte[]> relatorioEmprestimosPdf(
+            @RequestParam(name = "dataInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam(name = "dataFim", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(name = "status", required = false) StatusEmprestimo status) {
+
+        List<Emprestimo> emprestimos = relatorioService.filtrarEmprestimos(dataInicio, dataFim, status);
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("emprestimos", emprestimos);
+        dados.put("dataInicio", dataInicio);
+        dados.put("dataFim", dataFim);
+        dados.put("statusSelecionado", status);
+        dados.put("totalRegistros", emprestimos.size());
+
+        byte[] pdfBytes = pdfReportService.gerarPdf("relatorios/pdf/emprestimos-pdf", dados);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"relatorio-emprestimos.pdf\"")
+                .body(pdfBytes);
+    }
+
     @GetMapping("/atrasados")
     public String relatorioAtrasados(Model model) {
         List<Emprestimo> atrasados = relatorioService.obterEmprestimosAtrasados();
@@ -65,6 +96,22 @@ public class RelatorioController {
         model.addAttribute("totalAtrasados", atrasados.size());
         return "relatorios/atrasados";
     }
+
+    @GetMapping("/atrasados/pdf")
+    public ResponseEntity<byte[]> relatorioAtrasadosPdf() {
+        List<Emprestimo> atrasados = relatorioService.obterEmprestimosAtrasados();
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("atrasados", atrasados);
+        dados.put("totalAtrasados", atrasados.size());
+
+        byte[] pdfBytes = pdfReportService.gerarPdf("relatorios/pdf/atrasados-pdf", dados);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"relatorio-atrasados.pdf\"")
+                .body(pdfBytes);
+    }
+
     @GetMapping("/livros-populares")
     public String relatorioLivrosPopulares(
             @RequestParam(name = "limite", defaultValue = "10") int limite,
@@ -75,25 +122,67 @@ public class RelatorioController {
         model.addAttribute("limite", limite);
         return "relatorios/livros-populares";
     }
-     @GetMapping("/financeiro")
+
+    @GetMapping("/livros-populares/pdf")
+    public ResponseEntity<byte[]> relatorioLivrosPopularesPdf(
+            @RequestParam(name = "limite", defaultValue = "10") int limite) {
+
+        List<LivroMaisEmprestadoDTO> livrosPopulares = relatorioService.obterLivrosMaisEmprestados(limite);
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("livrosPopulares", livrosPopulares);
+        dados.put("limite", limite);
+
+        byte[] pdfBytes = pdfReportService.gerarPdf("relatorios/pdf/livros-populares-pdf", dados);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"relatorio-livros-populares.pdf\"")
+                .body(pdfBytes);
+    }
+
+    @GetMapping("/financeiro")
     public String relatorioFinanceiro(
             @RequestParam(name = "dataInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(name = "dataFim", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
             @RequestParam(name = "status", required = false) StatusMulta status,
             Model model) {
 
-        ResumoFinanceiroDTO resumoFinanceiro =  relatorioService.obterResumoFinanceiro(dataInicio, dataFim);
+        ResumoFinanceiroDTO resumoFinanceiro = relatorioService.obterResumoFinanceiro(dataInicio, dataFim);
         List<Multa> multas = relatorioService.filtrarMultas(dataInicio, dataFim, status);
 
-         model.addAttribute("financeiro", resumoFinanceiro);
-         model.addAttribute("multas", multas);
-         model.addAttribute("dataInicio", dataInicio);
-         model.addAttribute("dataFim", dataFim);
-         model.addAttribute("statusSelecionado", status);
-         model.addAttribute("statusList", StatusMulta.values());
-         return "relatorios/financeiro";
-     }
+        model.addAttribute("financeiro", resumoFinanceiro);
+        model.addAttribute("multas", multas);
+        model.addAttribute("dataInicio", dataInicio);
+        model.addAttribute("dataFim", dataFim);
+        model.addAttribute("statusSelecionado", status);
+        model.addAttribute("statusList", StatusMulta.values());
+        return "relatorios/financeiro";
+    }
 
+    @GetMapping("/financeiro/pdf")
+    public ResponseEntity<byte[]> relatorioFinanceiroPdf(
+            @RequestParam(name = "dataInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam(name = "dataFim", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(name = "status", required = false) StatusMulta status) {
+
+        ResumoFinanceiroDTO resumoFinanceiro = relatorioService.obterResumoFinanceiro(dataInicio, dataFim);
+        List<Multa> multas = relatorioService.filtrarMultas(dataInicio, dataFim, status);
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("financeiro", resumoFinanceiro);
+        dados.put("multas", multas);
+        dados.put("dataInicio", dataInicio);
+        dados.put("dataFim", dataFim);
+        dados.put("statusSelecionado", status);
+
+        byte[] pdfBytes = pdfReportService.gerarPdf("relatorios/pdf/financeiro-pdf", dados);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"relatorio-financeiro.pdf\"")
+                .body(pdfBytes);
+    }
+
+    // Endpoints REST auxiliares para integração ou gráficos assíncronos
     @GetMapping("/api/resumo")
     @ResponseBody
     public RelatorioGeralDTO apiResumo() {
