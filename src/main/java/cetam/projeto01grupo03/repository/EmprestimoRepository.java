@@ -3,14 +3,14 @@ package cetam.projeto01grupo03.repository;
 import cetam.projeto01grupo03.dto.LivroMaisEmprestadoDTO;
 import cetam.projeto01grupo03.model.Emprestimo;
 import cetam.projeto01grupo03.model.StatusEmprestimo;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface EmprestimoRepository extends JpaRepository <Emprestimo, Long> {
+public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
     List<Emprestimo> findByStatus(StatusEmprestimo status);
 
     List<Emprestimo> findByAlunoNomeContainingIgnoreCase(String nomeAluno);
@@ -37,10 +37,9 @@ public interface EmprestimoRepository extends JpaRepository <Emprestimo, Long> {
 
     List<Emprestimo> findAllByOrderByIdDesc(Pageable pageable);
 
-    @Query("SELECT new br.com.biblioteca.biblioteca.dto.LivroMaisEmprestadoDTO(e.livro.titulo, e.livro.autor.nome, e.livro.categoria.nome, COUNT(e)) " +
+    @Query("SELECT new cetam.projeto01grupo03.dto.LivroMaisEmprestadoDTO(e.livro.titulo, e.livro.autor.nome, e.livro.categoria.nome, COUNT(e)) " +
             "FROM Emprestimo e " +
             "GROUP BY e.livro.id, e.livro.titulo, e.livro.autor.nome, e.livro.categoria.nome " +
             "ORDER BY COUNT(e) DESC")
     List<LivroMaisEmprestadoDTO> findLivrosMaisEmprestados(Pageable pageable);
-
 }
