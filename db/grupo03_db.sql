@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS autores (
 CREATE TABLE IF NOT EXISTS categorias (
     id_categoria BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    descricao VARCHAR(255),
-)
+    descricao VARCHAR(255)
+);
 
 -- 3. Tabela: editoras
 CREATE TABLE IF NOT EXISTS editoras (
