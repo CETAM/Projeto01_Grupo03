@@ -10,10 +10,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface MultaRepository extends JpaRepository <Multa, Long> {
+public interface MultaRepository extends JpaRepository<Multa, Long> {
     List<Multa> findByStatus(StatusMulta status);
 
     List<Multa> findByEmprestimoAlunoId(Long alunoId);
+
+    boolean existsByEmprestimoAlunoIdAndStatus(Long alunoId, StatusMulta status);
 
     List<Multa> findByEmprestimoAlunoNomeContainingIgnoreCaseOrEmprestimoAlunoMatriculaContainingIgnoreCase(String nome, String matricula);
 
