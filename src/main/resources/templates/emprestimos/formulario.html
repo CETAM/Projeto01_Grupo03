@@ -1,10 +1,456 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novo Empréstimo - Sistema de Biblioteca</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom Sidebar & Design System CSS -->
+  <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+  <style>
+    .content-card-minimal {
+      max-width: 560px;
+    }
+  </style>
 </head>
+
 <body>
-$END$
+
+<div class="app-wrapper">
+  <!-- Sidebar Fragment -->
+  <div th:replace="~{fragments/sidebar :: sidebar('emprestimos')}"></div>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <!-- Header da Página -->
+    <div class="mb-3">
+      <a th:href="@{/emprestimos}" class="text-decoration-none text-muted d-inline-flex align-items-center mb-2 small fw-medium">
+        <i class="bi bi-arrow-left me-1"></i> Voltar para lista de empréstimos
+      </a>
+      <h2 class="page-title">Novo Empréstimo</h2>
+      <p class="page-subtitle">Pesquise o aluno e o livro para registrar a saída</p>
+    </div>
+
+    <!-- Alerta de Erro Customizável -->
+    <div th:if="${mensagemErro}" class="custom-alert custom-alert-danger mb-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-circle-fill alert-icon"></i>
+        <span class="alert-content" th:text="${mensagemErro}"></span>
+      </div>
+      <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Formulário -->
+    <div class="content-card-minimal">
+      <form th:action="@{/emprestimos/salvar}" method="post" onsubmit="return validarEnvioFormulario()">
+        <!-- Campo ID do Aluno (Hidden) -->
+        <input type="hidden" id="alunoId" name="alunoId" required>
+
+        <!-- Busca Dinâmica de Aluno -->
+        <div class="mb-3 position-relative">
+          <label class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+            Aluno Solicitante <span class="text-danger">*</span>
+          </label>
+
+          <!-- Campo de Pesquisa do Aluno -->
+          <div id="campoBuscaAlunoContainer" class="position-relative">
+            <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
+                                <span class="ps-3 pe-2 text-secondary d-flex align-items-center">
+                                    <i class="bi bi-search"></i>
+                                </span>
+              <input type="text" id="searchAlunoInput"
+                     class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
+                     placeholder="Digite o nome ou matrícula do aluno..."
+                     autocomplete="off" autofocus>
+              <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm text-nowrap me-1" onclick="executarBuscaAluno()">
+                Buscar
+              </button>
+            </div>
+            <div class="form-text text-muted small mt-1">
+              <i class="bi bi-info-circle me-1"></i> Digite ou clique em <strong>Buscar</strong> para listar os alunos ativos.
+            </div>
+
+            <!-- Lista Flutuante de Resultados -->
+            <div id="alunoResultadosList" class="shadow-lg border rounded-4 bg-white p-2"
+                 style="display: none; max-height: 220px; overflow-y: auto; z-index: 1090; position: absolute; top: 56px; left: 0; width: 100%;">
+            </div>
+          </div>
+
+          <!-- Card de Aluno Selecionado -->
+          <div id="alunoSelecionadoCard" class="d-none p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-initial avatar-blue" id="alunoPreviewAvatar" style="width: 40px; height: 40px; font-size: 0.88rem;">AL</div>
+              <div>
+                <div class="fw-bold text-dark fs-6" id="alunoPreviewNome">Nome do Aluno</div>
+                <div class="text-muted small" id="alunoPreviewMatricula">Matrícula: 20240101</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" onclick="limparSelecaoAluno()">
+              <i class="bi bi-arrow-repeat me-1"></i> Trocar
+            </button>
+          </div>
+        </div>
+
+        <!-- Busca Dinâmica de Livro -->
+        <div class="mb-3 position-relative">
+          <label class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+            Livro do Acervo <span class="text-danger">*</span>
+          </label>
+          <input type="hidden" id="livroId" name="livroId" required>
+
+          <!-- Campo de Pesquisa do Livro -->
+          <div id="campoBuscaLivroContainer" class="position-relative">
+            <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
+                                <span class="ps-3 pe-2 text-secondary d-flex align-items-center">
+                                    <i class="bi bi-book"></i>
+                                </span>
+              <input type="text" id="searchLivroInput"
+                     class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
+                     placeholder="Digite o título, autor, ISBN ou categoria..."
+                     autocomplete="off">
+              <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm text-nowrap me-1" onclick="executarBuscaLivro()">
+                Buscar
+              </button>
+            </div>
+            <div class="form-text text-muted small mt-1">
+              <i class="bi bi-info-circle me-1"></i> Digite ou clique em <strong>Buscar</strong> para listar os livros disponíveis.
+            </div>
+
+            <!-- Lista Flutuante de Resultados da Busca de Livros -->
+            <div id="livroResultadosList" class="shadow-lg border rounded-4 bg-white p-2"
+                 style="display: none; max-height: 240px; overflow-y: auto; z-index: 1090; position: absolute; top: 56px; left: 0; width: 100%;">
+            </div>
+          </div>
+
+          <!-- Card de Livro Selecionado -->
+          <div id="livroSelecionadoCard" class="d-none p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-initial avatar-purple" id="livroPreviewAvatar" style="width: 40px; height: 40px; font-size: 0.88rem;">LV</div>
+              <div>
+                <div class="fw-bold text-dark fs-6" id="livroPreviewTitulo">Título do Livro</div>
+                <div class="text-muted small" id="livroPreviewDetalhes">Autor • ISBN • Exemplares</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" onclick="limparSelecaoLivro()">
+              <i class="bi bi-arrow-repeat me-1"></i> Trocar
+            </button>
+          </div>
+        </div>
+
+        <!-- Informativo de Regra de Negócio -->
+        <div class="p-3 bg-light rounded-4 border mb-4">
+          <div class="d-flex align-items-center gap-2 mb-1 text-dark fw-semibold" style="font-size: 0.85rem;">
+            <i class="bi bi-info-circle-fill text-primary"></i> Informações do Empréstimo
+          </div>
+          <div class="text-muted small" style="font-size: 0.8rem; line-height: 1.4;">
+            • Prazo padrão de devolução: <strong>14 dias</strong> a partir de hoje.<br>
+            • Multa por atraso: <strong>R$ 2,00 por dia</strong> após o vencimento.<br>
+            • Limite de até <strong>3 livros simultâneos</strong> por aluno.
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end pt-1">
+          <a th:href="@{/emprestimos}" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary border-0">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+            <i class="bi bi-check2 me-1"></i> Realizar Empréstimo
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<!-- Fonte de Dados dos Alunos Ativos -->
+<div id="alunosDataSource" class="d-none">
+  <div th:each="a : ${alunos}"
+       class="aluno-item-data"
+       th:data-id="${a.id}"
+       th:data-nome="${a.nome}"
+       th:data-matricula="${a.matricula}"
+       th:data-email="${a.email}">
+  </div>
+</div>
+
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  let listaAlunos = [];
+
+  function carregarDadosAlunos() {
+    listaAlunos = [];
+    const elements = document.querySelectorAll('#alunosDataSource .aluno-item-data');
+    elements.forEach(el => {
+      const id = el.getAttribute('data-id');
+      const nome = el.getAttribute('data-nome');
+      const matricula = el.getAttribute('data-matricula');
+      const email = el.getAttribute('data-email') || '';
+      if (id && nome) {
+        listaAlunos.push({ id, nome, matricula: matricula || '', email });
+      }
+    });
+  }
+
+  // =========================================================================
+  // ALUNOS
+  // =========================================================================
+  const searchAlunoInput = document.getElementById('searchAlunoInput');
+  const alunoResultadosList = document.getElementById('alunoResultadosList');
+  const alunoIdInput = document.getElementById('alunoId');
+  const campoBuscaAlunoContainer = document.getElementById('campoBuscaAlunoContainer');
+  const alunoSelecionadoCard = document.getElementById('alunoSelecionadoCard');
+  const alunoPreviewNome = document.getElementById('alunoPreviewNome');
+  const alunoPreviewMatricula = document.getElementById('alunoPreviewMatricula');
+  const alunoPreviewAvatar = document.getElementById('alunoPreviewAvatar');
+
+  function renderizarResultados(query) {
+    carregarDadosAlunos();
+    const termo = (query || '').trim().toLowerCase();
+
+    if (!termo) {
+      alunoResultadosList.innerHTML = '';
+      alunoResultadosList.style.display = 'none';
+      return;
+    }
+
+    const filtrados = listaAlunos.filter(aluno =>
+            (aluno.nome && aluno.nome.toLowerCase().includes(termo)) ||
+            (aluno.matricula && aluno.matricula.toLowerCase().includes(termo))
+    );
+
+    if (filtrados.length === 0) {
+      alunoResultadosList.innerHTML = `
+                    <div class="p-3 text-center text-muted small">
+                        <i class="bi bi-person-x d-block fs-5 mb-1 text-secondary"></i>
+                        Nenhum aluno ativo encontrado com "<strong>${termo}</strong>".
+                    </div>
+                `;
+      alunoResultadosList.style.display = 'block';
+      return;
+    }
+
+    let html = '';
+    filtrados.slice(0, 8).forEach(aluno => {
+      const iniciais = aluno.nome && aluno.nome.length >= 2 ? aluno.nome.substring(0, 2).toUpperCase() : 'AL';
+      const safeNome = (aluno.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const safeMatricula = (aluno.matricula || '').replace(/'/g, "\\'");
+      html += `
+                    <button type="button" class="w-100 text-start border-0 bg-transparent p-2 rounded-3 d-flex align-items-center justify-content-between mb-1"
+                         style="cursor: pointer; transition: background 0.15s ease;"
+                         onmouseover="this.style.backgroundColor='#f1f5f9'"
+                         onmouseout="this.style.backgroundColor='transparent'"
+                         onclick="selecionarAluno('${aluno.id}', '${safeNome}', '${safeMatricula}')">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="avatar-initial avatar-blue" style="width: 32px; height: 32px; font-size: 0.78rem;">
+                                ${iniciais}
+                            </span>
+                            <div>
+                                <div class="fw-semibold text-dark text-start" style="font-size: 0.9rem;">${aluno.nome}</div>
+                                <div class="text-muted small text-start" style="font-size: 0.78rem;">${aluno.email ? aluno.email : 'Sem e-mail'}</div>
+                            </div>
+                        </div>
+                        <span class="badge bg-light text-dark border font-monospace ms-2">${aluno.matricula}</span>
+                    </button>
+                `;
+    });
+
+    alunoResultadosList.innerHTML = html;
+    alunoResultadosList.style.display = 'block';
+  }
+
+  if (searchAlunoInput) {
+    searchAlunoInput.addEventListener('input', function () {
+      renderizarResultados(this.value);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (campoBuscaAlunoContainer && !campoBuscaAlunoContainer.contains(e.target)) {
+        alunoResultadosList.style.display = 'none';
+      }
+    });
+  }
+
+  function executarBuscaAluno() {
+    if (searchAlunoInput) {
+      renderizarResultados(searchAlunoInput.value);
+      searchAlunoInput.focus();
+    }
+  }
+
+  function selecionarAluno(id, nome, matricula) {
+    alunoIdInput.value = id;
+    alunoPreviewNome.innerText = nome;
+    alunoPreviewMatricula.innerText = 'Matrícula: ' + matricula;
+    alunoPreviewAvatar.innerText = nome && nome.length >= 2 ? nome.substring(0, 2).toUpperCase() : 'AL';
+
+    campoBuscaAlunoContainer.classList.add('d-none');
+    alunoResultadosList.style.display = 'none';
+    alunoSelecionadoCard.classList.remove('d-none');
+    if (searchAlunoInput) searchAlunoInput.value = '';
+  }
+
+  function limparSelecaoAluno() {
+    alunoIdInput.value = '';
+    alunoSelecionadoCard.classList.add('d-none');
+    campoBuscaAlunoContainer.classList.remove('d-none');
+    if (searchAlunoInput) {
+      searchAlunoInput.value = '';
+      searchAlunoInput.focus();
+    }
+  }
+
+  // =========================================================================
+  // LIVROS (VIA REST API)
+  // =========================================================================
+  const searchLivroInput = document.getElementById('searchLivroInput');
+  const livroResultadosList = document.getElementById('livroResultadosList');
+  const livroIdInput = document.getElementById('livroId');
+  const campoBuscaLivroContainer = document.getElementById('campoBuscaLivroContainer');
+  const livroSelecionadoCard = document.getElementById('livroSelecionadoCard');
+  const livroPreviewTitulo = document.getElementById('livroPreviewTitulo');
+  const livroPreviewDetalhes = document.getElementById('livroPreviewDetalhes');
+  const livroPreviewAvatar = document.getElementById('livroPreviewAvatar');
+
+  let debounceTimerLivro;
+
+  async function renderizarResultadosLivros(query) {
+    const termo = (query || '').trim();
+
+    if (!termo) {
+      livroResultadosList.innerHTML = '';
+      livroResultadosList.style.display = 'none';
+      return;
+    }
+
+    livroResultadosList.innerHTML = '<div class="p-3 text-center text-muted small"><i class="bi bi-hourglass-split me-1"></i> Buscando livros disponíveis...</div>';
+    livroResultadosList.style.display = 'block';
+
+    try {
+      const response = await fetch(`/api/livros/disponiveis?termo=${encodeURIComponent(termo)}`);
+      const livros = await response.json();
+
+      if (!livros || livros.length === 0) {
+        livroResultadosList.innerHTML = `
+                        <div class="p-3 text-center text-muted small">
+                            <i class="bi bi-book-half d-block fs-5 mb-1 text-secondary"></i>
+                            Nenhum livro disponível encontrado com "<strong>${termo}</strong>".
+                        </div>
+                    `;
+        return;
+      }
+
+      let html = '';
+      livros.slice(0, 8).forEach(livro => {
+        const iniciais = livro.titulo && livro.titulo.length >= 2 ? livro.titulo.substring(0, 2).toUpperCase() : 'LV';
+        const safeTitulo = (livro.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeAutor = (livro.autorNome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeIsbn = (livro.isbn || '').replace(/'/g, "\\'");
+        const exemplares = livro.quantidadeExemplares || 0;
+        const safeCategoria = (livro.categoriaNome || 'Geral').replace(/'/g, "\\'");
+
+        html += `
+                        <button type="button" class="w-100 text-start border-0 bg-transparent p-2 rounded-3 d-flex align-items-center justify-content-between mb-1"
+                             style="cursor: pointer; transition: background 0.15s ease;"
+                             onmouseover="this.style.backgroundColor='#f1f5f9'"
+                             onmouseout="this.style.backgroundColor='transparent'"
+                             onclick="selecionarLivro('${livro.id}', '${safeTitulo}', '${safeAutor}', '${safeIsbn}', ${exemplares}, '${safeCategoria}')">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="avatar-initial avatar-purple" style="width: 32px; height: 32px; font-size: 0.78rem;">
+                                    ${iniciais}
+                                </span>
+                                <div>
+                                    <div class="fw-semibold text-dark text-start" style="font-size: 0.9rem;">${livro.titulo}</div>
+                                    <div class="text-muted small text-start" style="font-size: 0.78rem;">
+                                        ${livro.autorNome} • <span class="text-primary">${livro.categoriaNome}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end ms-2">
+                                <span class="badge bg-light text-success border small font-monospace">${exemplares} disp.</span>
+                            </div>
+                        </button>
+                    `;
+      });
+
+      livroResultadosList.innerHTML = html;
+      livroResultadosList.style.display = 'block';
+    } catch (err) {
+      livroResultadosList.innerHTML = '<div class="p-3 text-center text-danger small">Erro ao carregar livros.</div>';
+    }
+  }
+
+  if (searchLivroInput) {
+    searchLivroInput.addEventListener('input', function () {
+      clearTimeout(debounceTimerLivro);
+      debounceTimerLivro = setTimeout(() => {
+        renderizarResultadosLivros(this.value);
+      }, 200);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (campoBuscaLivroContainer && !campoBuscaLivroContainer.contains(e.target)) {
+        livroResultadosList.style.display = 'none';
+      }
+    });
+  }
+
+  function executarBuscaLivro() {
+    if (searchLivroInput) {
+      renderizarResultadosLivros(searchLivroInput.value);
+      searchLivroInput.focus();
+    }
+  }
+
+  function selecionarLivro(id, titulo, autor, isbn, exemplares, categoria) {
+    livroIdInput.value = id;
+    livroPreviewTitulo.innerText = titulo;
+    livroPreviewDetalhes.innerText = `${autor} • ${categoria} • ${exemplares} exemplar(es)`;
+    livroPreviewAvatar.innerText = titulo && titulo.length >= 2 ? titulo.substring(0, 2).toUpperCase() : 'LV';
+
+    campoBuscaLivroContainer.classList.add('d-none');
+    livroResultadosList.style.display = 'none';
+    livroSelecionadoCard.classList.remove('d-none');
+    if (searchLivroInput) searchLivroInput.value = '';
+  }
+
+  function limparSelecaoLivro() {
+    livroIdInput.value = '';
+    livroSelecionadoCard.classList.add('d-none');
+    campoBuscaLivroContainer.classList.remove('d-none');
+    if (searchLivroInput) {
+      searchLivroInput.value = '';
+      searchLivroInput.focus();
+    }
+  }
+
+  function validarEnvioFormulario() {
+    if (!alunoIdInput.value) {
+      if (window.showToast) window.showToast('danger', 'Por favor, busque e selecione o aluno solicitante.');
+      else alert('Por favor, busque e selecione o aluno solicitante.');
+      if (searchAlunoInput) searchAlunoInput.focus();
+      return false;
+    }
+    if (!livroIdInput.value) {
+      if (window.showToast) window.showToast('danger', 'Por favor, busque e selecione o livro do acervo.');
+      else alert('Por favor, busque e selecione o livro do acervo.');
+      if (searchLivroInput) searchLivroInput.focus();
+      return false;
+    }
+    return true;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    carregarDadosAlunos();
+  });
+</script>
 </body>
+
 </html>
