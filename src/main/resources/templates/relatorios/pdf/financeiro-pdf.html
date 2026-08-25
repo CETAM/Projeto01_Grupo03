@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Demonstrativo Financeiro de Multas - PDF</title>
+  <style>
+    @page {
+        size: A4 landscape;
+        margin: 12mm 15mm 15mm 15mm;
+        @bottom-left {
+            content: "Sistema de Controle de Biblioteca - Demonstrativo Financeiro";
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+        @bottom-right {
+            content: "Página " counter(page) " de " counter(pages);
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+    }
+
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        margin: 0;
+        padding: 0;
+        font-size: 9.5pt;
+        line-height: 1.35;
+    }
+
+    .header-container {
+        border-bottom: 2px solid #059669;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .header-table td {
+        vertical-align: middle;
+        border: none;
+        padding: 0;
+    }
+
+    .system-title {
+        font-size: 16pt;
+        font-weight: bold;
+        color: #065f46;
+        margin: 0;
+    }
+
+    .report-subtitle {
+        font-size: 11pt;
+        color: #475569;
+        margin-top: 2px;
+    }
+
+    .meta-box {
+        text-align: right;
+        font-size: 8.5pt;
+        color: #64748b;
+    }
+
+    .kpi-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 10px 0;
+        margin-bottom: 12px;
+    }
+
+    .kpi-card {
+        border-radius: 6px;
+        padding: 10px 14px;
+        vertical-align: top;
+    }
+
+    .kpi-card-blue {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+    }
+
+    .kpi-card-green {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+    }
+
+    .kpi-card-amber {
+        background-color: #fffbeb;
+        border: 1px solid #fde68a;
+    }
+
+    .kpi-label {
+        font-size: 8pt;
+        font-weight: bold;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+        font-size: 14pt;
+        font-weight: bold;
+        margin: 3px 0;
+    }
+
+    .kpi-desc {
+        font-size: 7.5pt;
+        color: #64748b;
+    }
+
+    .filter-banner {
+        background-color: #f8fafc;
+        border-radius: 4px;
+        padding: 5px 10px;
+        margin-bottom: 10px;
+        font-size: 8.5pt;
+        color: #334155;
+        border-left: 3px solid #059669;
+    }
+
+    .filter-banner span {
+        margin-right: 15px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 6px;
+    }
+
+    .data-table thead {
+        display: table-header-group;
+    }
+
+    .data-table th {
+        background-color: #064e3b;
+        color: #ffffff;
+        font-size: 8.5pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 7px 8px;
+        text-align: left;
+        border: 1px solid #064e3b;
+    }
+
+    .data-table th.text-center {
+        text-align: center;
+    }
+
+    .data-table th.text-right {
+        text-align: right;
+    }
+
+    .data-table tr {
+        page-break-inside: avoid;
+    }
+
+    .data-table td {
+        padding: 6px 8px;
+        border: 1px solid #e2e8f0;
+        font-size: 8.5pt;
+    }
+
+    .data-table tr:nth-child(even) {
+        background-color: #f0fdf4;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-muted {
+        color: #64748b;
+        font-size: 7.5pt;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 7px;
+        font-size: 7.5pt;
+        font-weight: bold;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .badge-pago {
+        background-color: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+    }
+
+    .badge-pendente {
+        background-color: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+    }
+
+    .badge-cancelado {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
+    }
+
+    .summary-footer {
+        margin-top: 14px;
+        padding-top: 6px;
+        border-top: 1px dashed #cbd5e1;
+        font-size: 8.5pt;
+        color: #475569;
+        text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header-container">
+  <table class="header-table">
+    <tr>
+      <td>
+        <div class="system-title">Sistema de Biblioteca</div>
+        <div class="report-subtitle">Demonstrativo Financeiro de Multas</div>
+      </td>
+      <td class="meta-box">
+        <div><strong>Data de Emissão:</strong> <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">24/08/2026 09:00</span></div>
+        <div><strong>Registros Listados:</strong> <span th:text="${#lists.size(multas)}">0</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- Indicadores Financeiros Resumidos -->
+<table class="kpi-table">
+  <tr>
+    <td class="kpi-card kpi-card-blue" style="width: 33.33%;">
+      <div class="kpi-label">Total Gerado em Multas</div>
+      <div class="kpi-value" style="color: #0369a1;" th:text="${'R$ ' + #numbers.formatDecimal(financeiro.totalMultasGeradas, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div>
+      <div class="kpi-desc">Valor acumulado no período</div>
+    </td>
+    <td class="kpi-card kpi-card-green" style="width: 33.33%;">
+      <div class="kpi-label">Total Arrecadado (Quitado)</div>
+      <div class="kpi-value" style="color: #15803d;" th:text="${'R$ ' + #numbers.formatDecimal(financeiro.totalMultasPagas, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div>
+      <div class="kpi-desc" th:text="${financeiro.quantidadeMultasPagas + ' multa(s) liquidada(s)'}">0 multas pagas</div>
+    </td>
+    <td class="kpi-card kpi-card-amber" style="width: 33.33%;">
+      <div class="kpi-label">Total em Aberto (Pendente)</div>
+      <div class="kpi-value" style="color: #b45309;" th:text="${'R$ ' + #numbers.formatDecimal(financeiro.totalMultasPendentes, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div>
+      <div class="kpi-desc" th:text="${financeiro.quantidadeMultasPendentes + ' pendência(s) ativa(s)'}">0 pendências</div>
+    </td>
+  </tr>
+</table>
+
+<div class="filter-banner">
+  <strong>Filtros Aplicados:</strong>
+  <span>Período: <strong th:text="${(dataInicio != null ? #temporals.format(dataInicio, 'dd/MM/yyyy') : 'Início') + ' até ' + (dataFim != null ? #temporals.format(dataFim, 'dd/MM/yyyy') : 'Hoje')}">Todos</strong></span>
+  <span>Status: <strong th:text="${statusSelecionado != null ? statusSelecionado : 'Todos'}">Todos</strong></span>
+</div>
+
+<table class="data-table">
+  <thead>
+  <tr>
+    <th style="width: 5%;" class="text-center">#ID</th>
+    <th style="width: 25%;">Aluno / Matrícula</th>
+    <th style="width: 25%;">Livro Emprestado</th>
+    <th style="width: 12%;" class="text-center">Data Geração</th>
+    <th style="width: 12%;" class="text-center">Data Quitação</th>
+    <th style="width: 11%;" class="text-right">Valor</th>
+    <th style="width: 10%;" class="text-center">Status</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:if="${#lists.isEmpty(multas)}">
+    <td colspan="7" class="text-center" style="padding: 20px; color: #64748b;">
+      Nenhuma multa registrada para os critérios informados.
+    </td>
+  </tr>
+  <tr th:each="m : ${multas}">
+    <td class="text-center" style="font-weight: bold; color: #475569;" th:text="${'#' + m.id}">#1</td>
+    <td>
+      <strong th:text="${m.emprestimo != null && m.emprestimo.aluno != null ? m.emprestimo.aluno.nome : '-'}">Nome do Aluno</strong><br/>
+      <span class="text-muted" th:text="${m.emprestimo != null && m.emprestimo.aluno != null ? 'Matrícula: ' + m.emprestimo.aluno.matricula : '-'}">Matrícula: 123</span>
+    </td>
+    <td>
+      <strong th:text="${m.emprestimo != null && m.emprestimo.livro != null ? m.emprestimo.livro.titulo : '-'}">Título do Livro</strong><br/>
+      <span class="text-muted" th:if="${m.emprestimo != null}" th:text="${'Ref: Empréstimo #' + m.emprestimo.id}">Empréstimo #1</span>
+    </td>
+    <td class="text-center" th:text="${#temporals.format(m.dataGeracao, 'dd/MM/yyyy')}">01/01/2026</td>
+    <td class="text-center" th:text="${m.dataPagamento != null ? #temporals.format(m.dataPagamento, 'dd/MM/yyyy') : '-'}">-</td>
+    <td class="text-right" style="font-weight: bold; color: #0f172a;" th:text="${'R$ ' + #numbers.formatDecimal(m.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+    <td class="text-center">
+                    <span class="badge"
+                          th:classappend="${m.status.name() == 'PAGO' ? 'badge-pago' : (m.status.name() == 'PENDENTE' ? 'badge-pendente' : 'badge-cancelado')}"
+                          th:text="${m.status}">PENDENTE</span>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="summary-footer">
+  Documento gerado automaticamente pelo Sistema de Controle de Biblioteca em <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy às HH:mm')}">24/08/2026</span>.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Ranking de Livros Mais Emprestados - PDF</title>
+  <style>
+    @page {
+        size: A4 portrait;
+        margin: 15mm 15mm 20mm 15mm;
+        @bottom-left {
+            content: "Sistema de Controle de Biblioteca - Relatório Estatístico";
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+        @bottom-right {
+            content: "Página " counter(page) " de " counter(pages);
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+    }
+
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        margin: 0;
+        padding: 0;
+        font-size: 9.5pt;
+        line-height: 1.35;
+    }
+
+    .header-container {
+        border-bottom: 2px solid #d97706;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+    }
+
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .header-table td {
+        vertical-align: middle;
+        border: none;
+        padding: 0;
+    }
+
+    .system-title {
+        font-size: 16pt;
+        font-weight: bold;
+        color: #b45309;
+        margin: 0;
+    }
+
+    .report-subtitle {
+        font-size: 11pt;
+        color: #475569;
+        margin-top: 2px;
+    }
+
+    .meta-box {
+        text-align: right;
+        font-size: 8.5pt;
+        color: #64748b;
+    }
+
+    .ranking-banner {
+        background-color: #fffbeb;
+        border-radius: 4px;
+        padding: 6px 12px;
+        margin-bottom: 12px;
+        font-size: 8.5pt;
+        color: #92400e;
+        border-left: 3px solid #f59e0b;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+    }
+
+    .data-table thead {
+        display: table-header-group;
+    }
+
+    .data-table th {
+        background-color: #78350f;
+        color: #ffffff;
+        font-size: 8.5pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 7px 8px;
+        text-align: left;
+        border: 1px solid #78350f;
+    }
+
+    .data-table th.text-center {
+        text-align: center;
+    }
+
+    .data-table tr {
+        page-break-inside: avoid;
+    }
+
+    .data-table td {
+        padding: 6px 8px;
+        border: 1px solid #e2e8f0;
+        font-size: 8.5pt;
+    }
+
+    .data-table tr:nth-child(even) {
+        background-color: #fefce8;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-muted {
+        color: #64748b;
+        font-size: 7.5pt;
+    }
+
+    .rank-badge {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+        font-size: 8pt;
+        font-weight: bold;
+        border-radius: 50%;
+        text-align: center;
+    }
+
+    .rank-gold {
+        background-color: #fef08a;
+        color: #854d0e;
+        border: 1px solid #fde047;
+    }
+
+    .rank-silver {
+        background-color: #e2e8f0;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+
+    .rank-bronze {
+        background-color: #ffedd5;
+        color: #9a3412;
+        border: 1px solid #fed7aa;
+    }
+
+    .rank-default {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .count-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 8pt;
+        font-weight: bold;
+        border-radius: 10px;
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .summary-footer {
+        margin-top: 14px;
+        padding-top: 6px;
+        border-top: 1px dashed #cbd5e1;
+        font-size: 8.5pt;
+        color: #475569;
+        text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header-container">
+  <table class="header-table">
+    <tr>
+      <td>
+        <div class="system-title">Sistema de Biblioteca</div>
+        <div class="report-subtitle">Ranking de Livros Mais Emprestados</div>
+      </td>
+      <td class="meta-box">
+        <div><strong>Data de Emissão:</strong> <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">24/08/2026 09:00</span></div>
+        <div><strong>Amostragem:</strong> <span th:text="${'Top ' + limite + ' Títulos'}">Top 10</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="ranking-banner">
+  Classificação das obras com maior índice de circulação e interesse acadêmico.
+</div>
+
+<table class="data-table">
+  <thead>
+  <tr>
+    <th style="width: 10%;" class="text-center">Posição</th>
+    <th style="width: 40%;">Título do Livro</th>
+    <th style="width: 25%;">Autor</th>
+    <th style="width: 15%;">Categoria</th>
+    <th style="width: 10%;" class="text-center">Empréstimos</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:if="${#lists.isEmpty(livrosPopulares)}">
+    <td colspan="5" class="text-center" style="padding: 20px; color: #64748b;">
+      Nenhum empréstimo registrado no sistema até o momento.
+    </td>
+  </tr>
+  <tr th:each="livro, iter : ${livrosPopulares}">
+    <td class="text-center">
+                    <span class="rank-badge"
+                          th:classappend="${iter.index == 0 ? 'rank-gold' : (iter.index == 1 ? 'rank-silver' : (iter.index == 2 ? 'rank-bronze' : 'rank-default'))}"
+                          th:text="${'#' + (iter.index + 1)}">#1</span>
+    </td>
+    <td>
+      <strong th:text="${livro.titulo}">Título do Livro</strong>
+    </td>
+    <td th:text="${livro.autor != null ? livro.autor : '-'}">Nome do Autor</td>
+    <td th:text="${livro.categoria != null ? livro.categoria : 'Geral'}">Categoria</td>
+    <td class="text-center">
+      <span class="count-badge" th:text="${livro.totalEmprestimos}">0</span>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="summary-footer">
+  Documento gerado automaticamente pelo Sistema de Controle de Biblioteca em <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy às HH:mm')}">24/08/2026</span>.
+</div>
+
+</body>
+</html>
