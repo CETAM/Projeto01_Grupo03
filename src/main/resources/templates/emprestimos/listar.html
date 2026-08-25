@@ -2,440 +2,440 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Empréstimos - Sistema de Biblioteca</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <!-- Custom Sidebar CSS -->
-  <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empréstimos - Sistema de Biblioteca</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Sidebar CSS -->
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}">
 </head>
 
 <body>
 
 <div class="app-wrapper">
-  <!-- Sidebar Fragment Thymeleaf -->
-  <div th:replace="~{fragments/sidebar :: sidebar('emprestimos')}"></div>
+    <!-- Sidebar Fragment Thymeleaf -->
+    <div th:replace="~{fragments/sidebar :: sidebar('emprestimos')}"></div>
 
-  <!-- Conteúdo Principal -->
-  <main class="main-content">
-    <div class="container-fluid p-0">
-      <!-- Cabeçalho da Página -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="page-title">Empréstimos</h2>
-          <p class="page-subtitle">Controle de circulação, prazos de devolução, renovações e multas</p>
-        </div>
-        <!-- Botão Novo Empréstimo -->
-        <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm"
-                data-bs-toggle="modal" data-bs-target="#modalEmprestimo" onclick="configurarModalNovo()">
-          <i class="bi bi-plus-lg me-1"></i> Novo Empréstimo
-        </button>
-      </div>
-
-      <!-- Alertas Customizáveis -->
-      <div th:if="${mensagemSucesso}" class="custom-alert custom-alert-success mb-3" role="alert">
-        <div class="d-flex align-items-center">
-          <i class="bi bi-check-circle-fill alert-icon"></i>
-          <span class="alert-content" th:text="${mensagemSucesso}">Mensagem de sucesso</span>
-        </div>
-        <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <div th:if="${mensagemErro}" class="custom-alert custom-alert-danger mb-3" role="alert">
-        <div class="d-flex align-items-center">
-          <i class="bi bi-exclamation-circle-fill alert-icon"></i>
-          <span class="alert-content" th:text="${mensagemErro}">Mensagem de erro</span>
-        </div>
-        <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <!-- 3 Cards de Resumo Estatístico Minimalistas -->
-      <div class="row g-3 mb-4">
-        <!-- Card 1: Empréstimos Ativos -->
-        <div class="col-md-4">
-          <div class="stat-card-minimal">
-            <div>
-              <div class="text-secondary small fw-semibold mb-1">Empréstimos Ativos</div>
-              <h3 class="fw-bold mb-0" style="color: #0f172a;" th:text="${totalAtivos != null ? totalAtivos : 0}">0</h3>
-              <div class="text-muted small mt-1" style="font-size: 0.8rem;">Livros em circulação no momento</div>
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container-fluid p-0">
+            <!-- Cabeçalho da Página -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="page-title">Empréstimos</h2>
+                    <p class="page-subtitle">Controle de circulação, prazos de devolução, renovações e multas</p>
+                </div>
+                <!-- Botão Novo Empréstimo -->
+                <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                        data-bs-toggle="modal" data-bs-target="#modalEmprestimo" onclick="configurarModalNovo()">
+                    <i class="bi bi-plus-lg me-1"></i> Novo Empréstimo
+                </button>
             </div>
-            <div class="stat-icon-wrapper stat-icon-blue">
-              <i class="bi bi-clock-history"></i>
-            </div>
-          </div>
-        </div>
 
-        <!-- Card 2: Devoluções para Hoje -->
-        <div class="col-md-4">
-          <div class="stat-card-minimal">
-            <div>
-              <div class="text-secondary small fw-semibold mb-1">Devoluções para Hoje</div>
-              <h3 class="fw-bold mb-0" style="color: #0f172a;" th:text="${totalDevolucoesHoje != null ? totalDevolucoesHoje : 0}">0</h3>
-              <div class="text-muted small mt-1" style="font-size: 0.8rem;">Prazos com vencimento hoje</div>
+            <!-- Alertas Customizáveis -->
+            <div th:if="${mensagemSucesso}" class="custom-alert custom-alert-success mb-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill alert-icon"></i>
+                    <span class="alert-content" th:text="${mensagemSucesso}">Mensagem de sucesso</span>
+                </div>
+                <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
-            <div class="stat-icon-wrapper stat-icon-amber">
-              <i class="bi bi-calendar-check"></i>
+
+            <div th:if="${mensagemErro}" class="custom-alert custom-alert-danger mb-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-circle-fill alert-icon"></i>
+                    <span class="alert-content" th:text="${mensagemErro}">Mensagem de erro</span>
+                </div>
+                <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
-          </div>
-        </div>
 
-        <!-- Card 3: Empréstimos Atrasados -->
-        <div class="col-md-4">
-          <div class="stat-card-minimal">
-            <div>
-              <div class="text-secondary small fw-semibold mb-1">Atrasados</div>
-              <h3 class="fw-bold mb-0 text-danger" th:text="${totalAtrasados != null ? totalAtrasados : 0}">0</h3>
-              <div class="text-muted small mt-1" style="font-size: 0.8rem;">Exigem devolução e multa</div>
+            <!-- 3 Cards de Resumo Estatístico Minimalistas -->
+            <div class="row g-3 mb-4">
+                <!-- Card 1: Empréstimos Ativos -->
+                <div class="col-md-4">
+                    <div class="stat-card-minimal">
+                        <div>
+                            <div class="text-secondary small fw-semibold mb-1">Empréstimos Ativos</div>
+                            <h3 class="fw-bold mb-0" style="color: #0f172a;" th:text="${totalAtivos != null ? totalAtivos : 0}">0</h3>
+                            <div class="text-muted small mt-1" style="font-size: 0.8rem;">Livros em circulação no momento</div>
+                        </div>
+                        <div class="stat-icon-wrapper stat-icon-blue">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Devoluções para Hoje -->
+                <div class="col-md-4">
+                    <div class="stat-card-minimal">
+                        <div>
+                            <div class="text-secondary small fw-semibold mb-1">Devoluções para Hoje</div>
+                            <h3 class="fw-bold mb-0" style="color: #0f172a;" th:text="${totalDevolucoesHoje != null ? totalDevolucoesHoje : 0}">0</h3>
+                            <div class="text-muted small mt-1" style="font-size: 0.8rem;">Prazos com vencimento hoje</div>
+                        </div>
+                        <div class="stat-icon-wrapper stat-icon-amber">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Empréstimos Atrasados -->
+                <div class="col-md-4">
+                    <div class="stat-card-minimal">
+                        <div>
+                            <div class="text-secondary small fw-semibold mb-1">Atrasados</div>
+                            <h3 class="fw-bold mb-0 text-danger" th:text="${totalAtrasados != null ? totalAtrasados : 0}">0</h3>
+                            <div class="text-muted small mt-1" style="font-size: 0.8rem;">Exigem devolução e multa</div>
+                        </div>
+                        <div class="stat-icon-wrapper stat-icon-rose">
+                            <i class="bi bi-exclamation-octagon"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-icon-wrapper stat-icon-rose">
-              <i class="bi bi-exclamation-octagon"></i>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Card Minimalista de Listagem -->
-      <div class="content-card-minimal">
+            <!-- Card Minimalista de Listagem -->
+            <div class="content-card-minimal">
 
-        <!-- Barra Superior: Filtros Rápidos por Status à Esquerda + Barra de Pesquisa à Direita -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-          <!-- Filtros Rápidos por Status -->
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="text-secondary small fw-semibold me-1">Filtrar:</span>
-            <a th:href="@{/emprestimos(nomeAluno=${nomeAluno})}"
-               class="filter-pill"
-               th:classappend="${statusSelecionado == null ? 'active' : ''}">
-              Todos
-            </a>
-            <a th:href="@{/emprestimos(status='ATIVO', nomeAluno=${nomeAluno})}"
-               class="filter-pill"
-               th:classappend="${statusSelecionado != null && statusSelecionado.name() == 'ATIVO' ? 'active' : ''}">
-              <i class="bi bi-clock-history me-1"></i> Ativos
-            </a>
-            <a th:href="@{/emprestimos(status='ATRASADO', nomeAluno=${nomeAluno})}"
-               class="filter-pill"
-               th:classappend="${statusSelecionado != null && statusSelecionado.name() == 'ATRASADO' ? 'active' : ''}">
-              <i class="bi bi-exclamation-circle me-1"></i> Atrasados
-            </a>
-            <a th:href="@{/emprestimos(status='DEVOLVIDO', nomeAluno=${nomeAluno})}"
-               class="filter-pill"
-               th:classappend="${statusSelecionado != null && statusSelecionado.name() == 'DEVOLVIDO' ? 'active' : ''}">
-              <i class="bi bi-check-circle me-1"></i> Devolvidos
-            </a>
-          </div>
+                <!-- Barra Superior: Filtros Rápidos por Status à Esquerda + Barra de Pesquisa à Direita -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <!-- Filtros Rápidos por Status -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="text-secondary small fw-semibold me-1">Filtrar:</span>
+                        <a th:href="@{/emprestimos(nomeAluno=${nomeAluno})}"
+                           class="filter-pill"
+                           th:classappend="${statusSelecionado == null ? 'active' : ''}">
+                            Todos
+                        </a>
+                        <a th:href="@{/emprestimos(status='ATIVO', nomeAluno=${nomeAluno})}"
+                           class="filter-pill"
+                           th:classappend="${statusSelecionado != null && statusSelecionado.name() == 'ATIVO' ? 'active' : ''}">
+                            <i class="bi bi-clock-history me-1"></i> Ativos
+                        </a>
+                        <a th:href="@{/emprestimos(status='ATRASADO', nomeAluno=${nomeAluno})}"
+                           class="filter-pill"
+                           th:classappend="${statusSelecionado != null && statusSelecionado.name() == 'ATRASADO' ? 'active' : ''}">
+                            <i class="bi bi-exclamation-circle me-1"></i> Atrasados
+                        </a>
+                        <a th:href="@{/emprestimos(status='DEVOLVIDO', nomeAluno=${nomeAluno})}"
+                           class="filter-pill"
+                           th:classappend="${statusSelecionado != null && statusSelecionado.name() == 'DEVOLVIDO' ? 'active' : ''}">
+                            <i class="bi bi-check-circle me-1"></i> Devolvidos
+                        </a>
+                    </div>
 
-          <!-- Formulário de Filtro / Busca ao lado dos Filtros -->
-          <form th:action="@{/emprestimos}" method="get" class="d-flex align-items-center" style="min-width: 280px; max-width: 400px; flex: 1;">
-            <input type="hidden" name="status" th:if="${statusSelecionado != null}" th:value="${statusSelecionado}">
-            <div class="d-flex align-items-center rounded-pill p-1 border w-100" style="background-color: var(--bg-subtle);">
+                    <!-- Formulário de Filtro / Busca ao lado dos Filtros -->
+                    <form th:action="@{/emprestimos}" method="get" class="d-flex align-items-center" style="min-width: 280px; max-width: 400px; flex: 1;">
+                        <input type="hidden" name="status" th:if="${statusSelecionado != null}" th:value="${statusSelecionado}">
+                        <div class="d-flex align-items-center rounded-pill p-1 border w-100" style="background-color: var(--bg-subtle);">
                                 <span class="ps-3 pe-2 text-muted d-flex align-items-center">
                                     <i class="bi bi-search"></i>
                                 </span>
-              <input type="text" name="nomeAluno" th:value="${nomeAluno}"
-                     class="form-control border-0 bg-transparent shadow-none py-1"
-                     style="font-size: 0.84rem;"
-                     placeholder="Buscar por aluno ou matrícula...">
+                            <input type="text" name="nomeAluno" th:value="${nomeAluno}"
+                                   class="form-control border-0 bg-transparent shadow-none py-1"
+                                   style="font-size: 0.84rem;"
+                                   placeholder="Buscar por aluno ou matrícula...">
 
-              <a th:if="${nomeAluno != null && !#strings.isEmpty(nomeAluno)}"
-                 th:href="@{/emprestimos(status=${statusSelecionado})}"
-                 class="btn btn-link text-muted text-decoration-none px-2 me-1 p-0" title="Limpar busca">
-                <i class="bi bi-x-circle"></i>
-              </a>
+                            <a th:if="${nomeAluno != null && !#strings.isEmpty(nomeAluno)}"
+                               th:href="@{/emprestimos(status=${statusSelecionado})}"
+                               class="btn btn-link text-muted text-decoration-none px-2 me-1 p-0" title="Limpar busca">
+                                <i class="bi bi-x-circle"></i>
+                            </a>
 
-              <button class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm me-1"
-                      style="width: 34px; height: 34px; min-width: 34px; padding: 0;"
-                      type="submit" title="Buscar" aria-label="Buscar">
-                <i class="bi bi-search" style="font-size: 0.85rem;"></i>
-              </button>
-            </div>
-          </form>
-        </div>
-
-
-        <!-- Tabela Minimalista de Empréstimos -->
-        <div class="table-responsive-visible">
-          <table class="table-minimal">
-            <thead>
-            <tr>
-              <th style="width: 25%;">Aluno</th>
-              <th style="width: 25%;">Livro</th>
-              <th style="width: 14%;">Empréstimo</th>
-              <th style="width: 14%;">Devolução Prevista</th>
-              <th style="width: 12%;">Status</th>
-              <th style="width: 10%;" class="text-end pe-3">Ações</th>
-            </tr>
-            </thead>
-            <tbody>
-            <!-- Linha iterada com th:each -->
-            <tr th:each="emp, iterStat : ${emprestimos}">
-              <!-- Coluna Aluno -->
-              <td class="ps-2">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="avatar-initial"
-                       th:classappend="${iterStat.index % 4 == 0 ? 'avatar-blue' : (iterStat.index % 4 == 1 ? 'avatar-purple' : (iterStat.index % 4 == 2 ? 'avatar-emerald' : 'avatar-rose'))}"
-                       th:text="${emp.aluno != null && #strings.length(emp.aluno.nome) >= 2 ? #strings.toUpperCase(#strings.substring(emp.aluno.nome, 0, 2)) : 'AL'}">
-                    AL
-                  </div>
-                  <div>
-                    <div class="fw-semibold" style="color: #0f172a; font-size: 0.95rem;" th:text="${emp.aluno != null ? emp.aluno.nome : 'Aluno'}">Nome do Aluno</div>
-                    <div class="text-muted small" th:text="${emp.aluno != null ? 'Matrícula: ' + emp.aluno.matricula : ''}">Matrícula: 20240101</div>
-                  </div>
+                            <button class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm me-1"
+                                    style="width: 34px; height: 34px; min-width: 34px; padding: 0;"
+                                    type="submit" title="Buscar" aria-label="Buscar">
+                                <i class="bi bi-search" style="font-size: 0.85rem;"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-              </td>
 
-              <!-- Coluna Livro -->
-              <td>
-                <div class="fw-semibold text-dark" style="font-size: 0.95rem;" th:text="${emp.livro != null ? emp.livro.titulo : 'Livro'}">Título do Livro</div>
-                <div class="text-muted small" th:if="${emp.livro != null && emp.livro.autor != null}" th:text="${emp.livro.autor.nome}">Autor do Livro</div>
-              </td>
 
-              <!-- Coluna Data Empréstimo -->
-              <td>
-                <span class="text-secondary small fw-medium" th:text="${#temporals.format(emp.dataEmprestimo, 'dd/MM/yyyy')}">18/08/2026</span>
-              </td>
+                <!-- Tabela Minimalista de Empréstimos -->
+                <div class="table-responsive-visible">
+                    <table class="table-minimal">
+                        <thead>
+                        <tr>
+                            <th style="width: 25%;">Aluno</th>
+                            <th style="width: 25%;">Livro</th>
+                            <th style="width: 14%;">Empréstimo</th>
+                            <th style="width: 14%;">Devolução Prevista</th>
+                            <th style="width: 12%;">Status</th>
+                            <th style="width: 10%;" class="text-end pe-3">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Linha iterada com th:each -->
+                        <tr th:each="emp, iterStat : ${emprestimos}">
+                            <!-- Coluna Aluno -->
+                            <td class="ps-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-initial"
+                                         th:classappend="${iterStat.index % 4 == 0 ? 'avatar-blue' : (iterStat.index % 4 == 1 ? 'avatar-purple' : (iterStat.index % 4 == 2 ? 'avatar-emerald' : 'avatar-rose'))}"
+                                         th:text="${emp.aluno != null && #strings.length(emp.aluno.nome) >= 2 ? #strings.toUpperCase(#strings.substring(emp.aluno.nome, 0, 2)) : 'AL'}">
+                                        AL
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold" style="color: #0f172a; font-size: 0.95rem;" th:text="${emp.aluno != null ? emp.aluno.nome : 'Aluno'}">Nome do Aluno</div>
+                                        <div class="text-muted small" th:text="${emp.aluno != null ? 'Matrícula: ' + emp.aluno.matricula : ''}">Matrícula: 20240101</div>
+                                    </div>
+                                </div>
+                            </td>
 
-              <!-- Coluna Previsão de Devolução -->
-              <td>
-                <div>
+                            <!-- Coluna Livro -->
+                            <td>
+                                <div class="fw-semibold text-dark" style="font-size: 0.95rem;" th:text="${emp.livro != null ? emp.livro.titulo : 'Livro'}">Título do Livro</div>
+                                <div class="text-muted small" th:if="${emp.livro != null && emp.livro.autor != null}" th:text="${emp.livro.autor.nome}">Autor do Livro</div>
+                            </td>
+
+                            <!-- Coluna Data Empréstimo -->
+                            <td>
+                                <span class="text-secondary small fw-medium" th:text="${#temporals.format(emp.dataEmprestimo, 'dd/MM/yyyy')}">18/08/2026</span>
+                            </td>
+
+                            <!-- Coluna Previsão de Devolução -->
+                            <td>
+                                <div>
                                             <span class="fw-semibold small"
                                                   th:classappend="${emp.status.name() == 'ATRASADO' ? 'text-danger' : (emp.status.name() == 'ATIVO' ? 'text-dark' : 'text-muted')}"
                                                   th:text="${#temporals.format(emp.dataPrevisaoDevolucao, 'dd/MM/yyyy')}">
                                                 01/09/2026
                                             </span>
-                  <div th:if="${emp.dataDevolucao != null}" class="text-success small" style="font-size: 0.78rem;">
-                    Devolvido em <span th:text="${#temporals.format(emp.dataDevolucao, 'dd/MM/yyyy')}"></span>
-                  </div>
-                </div>
-              </td>
+                                    <div th:if="${emp.dataDevolucao != null}" class="text-success small" style="font-size: 0.78rem;">
+                                        Devolvido em <span th:text="${#temporals.format(emp.dataDevolucao, 'dd/MM/yyyy')}"></span>
+                                    </div>
+                                </div>
+                            </td>
 
-              <!-- Coluna Status -->
-              <td>
+                            <!-- Coluna Status -->
+                            <td>
                                         <span th:if="${emp.status.name() == 'ATIVO'}" class="badge-soft-success">
                                             <i class="bi bi-clock-history"></i> Em Aberto
                                         </span>
-                <span th:if="${emp.status.name() == 'ATRASADO'}" class="badge-soft-secondary text-danger">
+                                <span th:if="${emp.status.name() == 'ATRASADO'}" class="badge-soft-secondary text-danger">
                                             <i class="bi bi-exclamation-octagon-fill"></i> Atrasado
                                         </span>
-                <span th:if="${emp.status.name() == 'DEVOLVIDO'}" class="badge-soft-secondary text-muted">
+                                <span th:if="${emp.status.name() == 'DEVOLVIDO'}" class="badge-soft-secondary text-muted">
                                             <i class="bi bi-check-all"></i> Devolvido
                                         </span>
-              </td>
+                            </td>
 
-              <!-- Coluna Ações com Ícone de Reticências (...) e Dropdown -->
-              <td class="text-end pe-2">
-                <div class="dropdown">
-                  <button class="btn-action-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opções">
-                    <i class="bi bi-three-dots"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
-                    <!-- Opção Devolver Livro -->
-                    <li th:if="${emp.status.name() == 'ATIVO' || emp.status.name() == 'ATRASADO'}">
-                      <a class="dropdown-item dropdown-item-action text-success-action"
-                         th:href="@{/emprestimos/devolver/{id}(id=${emp.id})}"
-                         onclick="return confirmAction(event, this, 'Confirmar o recebimento e devolução deste livro ao acervo?', 'success', 'Registrar Devolução', 'Confirmar Devolução');">
-                        <i class="bi bi-box-arrow-in-down-left text-success fs-6"></i>
-                        <span>Registrar Devolução</span>
-                      </a>
-                    </li>
+                            <!-- Coluna Ações com Ícone de Reticências (...) e Dropdown -->
+                            <td class="text-end pe-2">
+                                <div class="dropdown">
+                                    <button class="btn-action-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opções">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                                        <!-- Opção Devolver Livro -->
+                                        <li th:if="${emp.status.name() == 'ATIVO' || emp.status.name() == 'ATRASADO'}">
+                                            <a class="dropdown-item dropdown-item-action text-success-action"
+                                               th:href="@{/emprestimos/devolver/{id}(id=${emp.id})}"
+                                               onclick="return confirmAction(event, this, 'Confirmar o recebimento e devolução deste livro ao acervo?', 'success', 'Registrar Devolução', 'Confirmar Devolução');">
+                                                <i class="bi bi-box-arrow-in-down-left text-success fs-6"></i>
+                                                <span>Registrar Devolução</span>
+                                            </a>
+                                        </li>
 
-                    <!-- Opção Renovar Empréstimo (+14 dias) -->
-                    <li th:if="${emp.status.name() == 'ATIVO'}">
-                      <a class="dropdown-item dropdown-item-action text-primary-action"
-                         th:href="@{/emprestimos/renovar/{id}(id=${emp.id})}"
-                         onclick="return confirmAction(event, this, 'Deseja renovar o prazo deste empréstimo por mais 14 dias?', 'primary', 'Renovar Empréstimo', 'Sim, Renovar');">
-                        <i class="bi bi-arrow-repeat text-primary fs-6"></i>
-                        <span>Renovar (+14 dias)</span>
-                      </a>
-                    </li>
+                                        <!-- Opção Renovar Empréstimo (+14 dias) -->
+                                        <li th:if="${emp.status.name() == 'ATIVO'}">
+                                            <a class="dropdown-item dropdown-item-action text-primary-action"
+                                               th:href="@{/emprestimos/renovar/{id}(id=${emp.id})}"
+                                               onclick="return confirmAction(event, this, 'Deseja renovar o prazo deste empréstimo por mais 14 dias?', 'primary', 'Renovar Empréstimo', 'Sim, Renovar');">
+                                                <i class="bi bi-arrow-repeat text-primary fs-6"></i>
+                                                <span>Renovar (+14 dias)</span>
+                                            </a>
+                                        </li>
 
-                    <li><hr class="dropdown-divider my-1 opacity-25"></li>
+                                        <li><hr class="dropdown-divider my-1 opacity-25"></li>
 
-                    <!-- Opção Cancelar / Excluir -->
-                    <li>
-                      <a class="dropdown-item dropdown-item-action text-danger-action"
-                         th:href="@{/emprestimos/excluir/{id}(id=${emp.id})}"
-                         onclick="return confirmAction(event, this, 'Tem certeza de que deseja excluir este registro de empréstimo?', 'danger', 'Excluir Empréstimo', 'Sim, Excluir');">
-                        <i class="bi bi-trash3 text-danger fs-6"></i>
-                        <span>Excluir Registro</span>
-                      </a>
-                    </li>
-                  </ul>
+                                        <!-- Opção Cancelar / Excluir -->
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-action text-danger-action"
+                                               th:href="@{/emprestimos/excluir/{id}(id=${emp.id})}"
+                                               onclick="return confirmAction(event, this, 'Tem certeza de que deseja excluir este registro de empréstimo?', 'danger', 'Excluir Empréstimo', 'Sim, Excluir');">
+                                                <i class="bi bi-trash3 text-danger fs-6"></i>
+                                                <span>Excluir Registro</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Mensagem caso a lista esteja vazia -->
+                        <tr th:if="${#lists.isEmpty(emprestimos)}">
+                            <td colspan="6" class="text-center py-5 text-secondary">
+                                <i class="bi bi-folder-x fs-1 d-block mb-2 text-muted"></i>
+                                <h6 class="fw-semibold mb-1 text-dark">Nenhum empréstimo encontrado</h6>
+                                <p class="small text-muted mb-0">Cadastre um novo empréstimo clicando no botão "+ Novo Empréstimo".</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
-              </td>
-            </tr>
-
-            <!-- Mensagem caso a lista esteja vazia -->
-            <tr th:if="${#lists.isEmpty(emprestimos)}">
-              <td colspan="6" class="text-center py-5 text-secondary">
-                <i class="bi bi-folder-x fs-1 d-block mb-2 text-muted"></i>
-                <h6 class="fw-semibold mb-1 text-dark">Nenhum empréstimo encontrado</h6>
-                <p class="small text-muted mb-0">Cadastre um novo empréstimo clicando no botão "+ Novo Empréstimo".</p>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+            </div>
         </div>
-      </div>
-    </div>
-  </main>
+    </main>
 </div>
 
 <!-- JANELA FLUTUANTE (MODAL MINIMALISTA MODERNO DE NOVO EMPRÉSTIMO) -->
 <div class="modal fade" id="modalEmprestimo" tabindex="-1" aria-labelledby="modalEmprestimoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-emprestimo-dialog">
-    <div class="modal-content modal-emprestimo-content p-4 border-0">
-      <form th:action="@{/emprestimos/salvar}" method="post" id="formEmprestimo" onsubmit="return validarEnvioEmprestimo()">
-        <!-- Campo ID do Aluno Selecionado (Hidden) -->
-        <input type="hidden" id="alunoId" name="alunoId" required>
+    <div class="modal-dialog modal-dialog-centered modal-emprestimo-dialog">
+        <div class="modal-content modal-emprestimo-content p-4 border-0">
+            <form th:action="@{/emprestimos/salvar}" method="post" id="formEmprestimo" onsubmit="return validarEnvioEmprestimo()">
+                <!-- Campo ID do Aluno Selecionado (Hidden) -->
+                <input type="hidden" id="alunoId" name="alunoId" required>
 
-        <!-- Cabeçalho Minimalista -->
-        <div class="d-flex justify-content-between align-items-start mb-4">
-          <div>
-            <h5 class="fw-bold mb-1" id="modalEmprestimoLabel" style="color: #0f172a; font-size: 1.25rem; letter-spacing: -0.3px;">
-              Novo Empréstimo
-            </h5>
-            <p class="text-secondary small mb-0">
-              Pesquise o aluno e selecione o livro para registrar a saída
-            </p>
-          </div>
-          <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
+                <!-- Cabeçalho Minimalista -->
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1" id="modalEmprestimoLabel" style="color: #0f172a; font-size: 1.25rem; letter-spacing: -0.3px;">
+                            Novo Empréstimo
+                        </h5>
+                        <p class="text-secondary small mb-0">
+                            Pesquise o aluno e selecione o livro para registrar a saída
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
 
-        <!-- Busca Dinâmica de Aluno (Nome ou Matrícula) -->
-        <div class="mb-3 position-relative">
-          <label class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
-            Aluno Solicitante <span class="text-danger">*</span>
-          </label>
+                <!-- Busca Dinâmica de Aluno (Nome ou Matrícula) -->
+                <div class="mb-3 position-relative">
+                    <label class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                        Aluno Solicitante <span class="text-danger">*</span>
+                    </label>
 
-          <!-- Campo de Pesquisa do Aluno Minimalista -->
-          <div id="campoBuscaAlunoContainer" class="position-relative">
-            <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
+                    <!-- Campo de Pesquisa do Aluno Minimalista -->
+                    <div id="campoBuscaAlunoContainer" class="position-relative">
+                        <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
                                 <span class="ps-3 pe-2 text-secondary d-flex align-items-center">
                                     <i class="bi bi-search"></i>
                                 </span>
-              <input type="text" id="searchAlunoInput"
-                     class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
-                     placeholder="Digite o nome ou matrícula do aluno..."
-                     autocomplete="off">
-              <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm text-nowrap me-1" onclick="executarBuscaAluno()">
-                Buscar
-              </button>
-            </div>
-            <div class="form-text text-muted small mt-1">
-              <i class="bi bi-info-circle me-1"></i> Digite ou clique em <strong>Buscar</strong> para listar os alunos ativos.
-            </div>
+                            <input type="text" id="searchAlunoInput"
+                                   class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
+                                   placeholder="Digite o nome ou matrícula do aluno..."
+                                   autocomplete="off">
+                            <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm text-nowrap me-1" onclick="executarBuscaAluno()">
+                                Buscar
+                            </button>
+                        </div>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i> Digite ou clique em <strong>Buscar</strong> para listar os alunos ativos.
+                        </div>
 
-            <!-- Lista Flutuante de Resultados da Busca -->
-            <div id="alunoResultadosList" class="shadow-lg border rounded-4 bg-white p-2"
-                 style="display: none; max-height: 240px; overflow-y: auto; z-index: 1090; position: absolute; top: 56px; left: 0; width: 100%;">
-            </div>
-          </div>
+                        <!-- Lista Flutuante de Resultados da Busca -->
+                        <div id="alunoResultadosList" class="shadow-lg border rounded-4 bg-white p-2"
+                             style="display: none; max-height: 240px; overflow-y: auto; z-index: 1090; position: absolute; top: 56px; left: 0; width: 100%;">
+                        </div>
+                    </div>
 
-          <!-- Card de Aluno Selecionado Minimalista -->
-          <div id="alunoSelecionadoCard" class="d-none p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-3">
-              <div class="avatar-initial avatar-blue" id="alunoPreviewAvatar" style="width: 40px; height: 40px; font-size: 0.88rem;">AL</div>
-              <div>
-                <div class="fw-bold text-dark fs-6" id="alunoPreviewNome">Nome do Aluno</div>
-                <div class="text-muted small" id="alunoPreviewMatricula">Matrícula: 20240101</div>
-              </div>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" onclick="limparSelecaoAluno()">
-              <i class="bi bi-arrow-repeat me-1"></i> Trocar
-            </button>
-          </div>
-        </div>
+                    <!-- Card de Aluno Selecionado Minimalista -->
+                    <div id="alunoSelecionadoCard" class="d-none p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-initial avatar-blue" id="alunoPreviewAvatar" style="width: 40px; height: 40px; font-size: 0.88rem;">AL</div>
+                            <div>
+                                <div class="fw-bold text-dark fs-6" id="alunoPreviewNome">Nome do Aluno</div>
+                                <div class="text-muted small" id="alunoPreviewMatricula">Matrícula: 20240101</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" onclick="limparSelecaoAluno()">
+                            <i class="bi bi-arrow-repeat me-1"></i> Trocar
+                        </button>
+                    </div>
+                </div>
 
-        <!-- Busca Dinâmica de Livro (Título, Autor, ISBN ou Categoria) -->
-        <div class="mb-3 position-relative">
-          <label class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
-            Livro do Acervo <span class="text-danger">*</span>
-          </label>
-          <input type="hidden" id="livroId" name="livroId" required>
+                <!-- Busca Dinâmica de Livro (Título, Autor, ISBN ou Categoria) -->
+                <div class="mb-3 position-relative">
+                    <label class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                        Livro do Acervo <span class="text-danger">*</span>
+                    </label>
+                    <input type="hidden" id="livroId" name="livroId" required>
 
-          <!-- Campo de Pesquisa do Livro Minimalista -->
-          <div id="campoBuscaLivroContainer" class="position-relative">
-            <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
+                    <!-- Campo de Pesquisa do Livro Minimalista -->
+                    <div id="campoBuscaLivroContainer" class="position-relative">
+                        <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
                                 <span class="ps-3 pe-2 text-secondary d-flex align-items-center">
                                     <i class="bi bi-book"></i>
                                 </span>
-              <input type="text" id="searchLivroInput"
-                     class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
-                     placeholder="Digite o título, autor, ISBN ou categoria..."
-                     autocomplete="off">
-              <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm text-nowrap me-1" onclick="executarBuscaLivro()">
-                Buscar
-              </button>
-            </div>
-            <div class="form-text text-muted small mt-1">
-              <i class="bi bi-info-circle me-1"></i> Digite ou clique em <strong>Buscar</strong> para listar os livros disponíveis.
-            </div>
+                            <input type="text" id="searchLivroInput"
+                                   class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
+                                   placeholder="Digite o título, autor, ISBN ou categoria..."
+                                   autocomplete="off">
+                            <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm text-nowrap me-1" onclick="executarBuscaLivro()">
+                                Buscar
+                            </button>
+                        </div>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i> Digite ou clique em <strong>Buscar</strong> para listar os livros disponíveis.
+                        </div>
 
-            <!-- Lista Flutuante de Resultados da Busca de Livros -->
-            <div id="livroResultadosList" class="shadow-lg border rounded-4 bg-white p-2"
-                 style="display: none; max-height: 250px; overflow-y: auto; z-index: 1090; position: absolute; top: 56px; left: 0; width: 100%;">
-            </div>
-          </div>
+                        <!-- Lista Flutuante de Resultados da Busca de Livros -->
+                        <div id="livroResultadosList" class="shadow-lg border rounded-4 bg-white p-2"
+                             style="display: none; max-height: 250px; overflow-y: auto; z-index: 1090; position: absolute; top: 56px; left: 0; width: 100%;">
+                        </div>
+                    </div>
 
-          <!-- Card de Livro Selecionado Minimalista -->
-          <div id="livroSelecionadoCard" class="d-none p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-3">
-              <div class="avatar-initial avatar-purple" id="livroPreviewAvatar" style="width: 40px; height: 40px; font-size: 0.88rem;">LV</div>
-              <div>
-                <div class="fw-bold text-dark fs-6" id="livroPreviewTitulo">Título do Livro</div>
-                <div class="text-muted small" id="livroPreviewDetalhes">Autor • ISBN • Exemplares</div>
-              </div>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" onclick="limparSelecaoLivro()">
-              <i class="bi bi-arrow-repeat me-1"></i> Trocar
-            </button>
-          </div>
+                    <!-- Card de Livro Selecionado Minimalista -->
+                    <div id="livroSelecionadoCard" class="d-none p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-initial avatar-purple" id="livroPreviewAvatar" style="width: 40px; height: 40px; font-size: 0.88rem;">LV</div>
+                            <div>
+                                <div class="fw-bold text-dark fs-6" id="livroPreviewTitulo">Título do Livro</div>
+                                <div class="text-muted small" id="livroPreviewDetalhes">Autor • ISBN • Exemplares</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" onclick="limparSelecaoLivro()">
+                            <i class="bi bi-arrow-repeat me-1"></i> Trocar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Informativo de Regra de Negócio -->
+                <div class="p-3 bg-light rounded-4 border mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1 text-dark fw-semibold" style="font-size: 0.85rem;">
+                        <i class="bi bi-info-circle-fill text-primary"></i> Informações do Empréstimo
+                    </div>
+                    <div class="text-muted small" style="font-size: 0.8rem; line-height: 1.4;">
+                        • Prazo padrão de devolução: <strong>14 dias</strong> a partir de hoje.<br>
+                        • Multa por atraso: <strong>R$ 2,00 por dia</strong> após o vencimento.<br>
+                        • Limite de até <strong>3 livros simultâneos</strong> por aluno.
+                    </div>
+                </div>
+
+                <!-- Ações Minimalistas -->
+                <div class="d-flex justify-content-end align-items-center gap-2 pt-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary border-0" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnConfirmarEmprestimo" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-check2 me-1"></i> Realizar Empréstimo
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <!-- Informativo de Regra de Negócio -->
-        <div class="p-3 bg-light rounded-4 border mb-4">
-          <div class="d-flex align-items-center gap-2 mb-1 text-dark fw-semibold" style="font-size: 0.85rem;">
-            <i class="bi bi-info-circle-fill text-primary"></i> Informações do Empréstimo
-          </div>
-          <div class="text-muted small" style="font-size: 0.8rem; line-height: 1.4;">
-            • Prazo padrão de devolução: <strong>14 dias</strong> a partir de hoje.<br>
-            • Multa por atraso: <strong>R$ 2,00 por dia</strong> após o vencimento.<br>
-            • Limite de até <strong>3 livros simultâneos</strong> por aluno.
-          </div>
-        </div>
-
-        <!-- Ações Minimalistas -->
-        <div class="d-flex justify-content-end align-items-center gap-2 pt-2">
-          <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary border-0" data-bs-dismiss="modal">
-            Cancelar
-          </button>
-          <button type="submit" id="btnConfirmarEmprestimo" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
-            <i class="bi bi-check2 me-1"></i> Realizar Empréstimo
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 <!-- Fonte de Dados dos Alunos Ativos em HTML Invisível para Pesquisa Rápida -->
 <div id="alunosDataSource" class="d-none">
-  <div th:each="a : ${alunos}"
-       class="aluno-item-data"
-       th:data-id="${a.id}"
-       th:data-nome="${a.nome}"
-       th:data-matricula="${a.matricula}"
-       th:data-email="${a.email}">
-  </div>
+    <div th:each="a : ${alunos}"
+         class="aluno-item-data"
+         th:data-id="${a.id}"
+         th:data-nome="${a.nome}"
+         th:data-matricula="${a.matricula}"
+         th:data-email="${a.email}">
+    </div>
 </div>
 
 <!-- Bootstrap 5 Bundle JS -->
@@ -443,66 +443,66 @@
 
 <!-- JavaScript para Controle da Busca em Tempo Real e Modal -->
 <script>
-  let listaAlunos = [];
+    let listaAlunos = [];
 
-  function carregarDadosAlunos() {
-    listaAlunos = [];
-    const elements = document.querySelectorAll('#alunosDataSource .aluno-item-data');
-    elements.forEach(el => {
-      const id = el.getAttribute('data-id');
-      const nome = el.getAttribute('data-nome');
-      const matricula = el.getAttribute('data-matricula');
-      const email = el.getAttribute('data-email') || '';
-      if (id && nome) {
-        listaAlunos.push({ id, nome, matricula: matricula || '', email });
-      }
-    });
-  }
-
-  // =========================================================================
-  // BUSCA E SELEÇÃO DE ALUNOS
-  // =========================================================================
-  const searchAlunoInput = document.getElementById('searchAlunoInput');
-  const alunoResultadosList = document.getElementById('alunoResultadosList');
-  const alunoIdInput = document.getElementById('alunoId');
-  const campoBuscaAlunoContainer = document.getElementById('campoBuscaAlunoContainer');
-  const alunoSelecionadoCard = document.getElementById('alunoSelecionadoCard');
-  const alunoPreviewNome = document.getElementById('alunoPreviewNome');
-  const alunoPreviewMatricula = document.getElementById('alunoPreviewMatricula');
-  const alunoPreviewAvatar = document.getElementById('alunoPreviewAvatar');
-
-  function renderizarResultados(query) {
-    carregarDadosAlunos();
-    const termo = (query || '').trim().toLowerCase();
-
-    if (!termo) {
-      alunoResultadosList.innerHTML = '';
-      alunoResultadosList.style.display = 'none';
-      return;
+    function carregarDadosAlunos() {
+        listaAlunos = [];
+        const elements = document.querySelectorAll('#alunosDataSource .aluno-item-data');
+        elements.forEach(el => {
+            const id = el.getAttribute('data-id');
+            const nome = el.getAttribute('data-nome');
+            const matricula = el.getAttribute('data-matricula');
+            const email = el.getAttribute('data-email') || '';
+            if (id && nome) {
+                listaAlunos.push({ id, nome, matricula: matricula || '', email });
+            }
+        });
     }
 
-    const filtrados = listaAlunos.filter(aluno =>
+    // =========================================================================
+    // BUSCA E SELEÇÃO DE ALUNOS
+    // =========================================================================
+    const searchAlunoInput = document.getElementById('searchAlunoInput');
+    const alunoResultadosList = document.getElementById('alunoResultadosList');
+    const alunoIdInput = document.getElementById('alunoId');
+    const campoBuscaAlunoContainer = document.getElementById('campoBuscaAlunoContainer');
+    const alunoSelecionadoCard = document.getElementById('alunoSelecionadoCard');
+    const alunoPreviewNome = document.getElementById('alunoPreviewNome');
+    const alunoPreviewMatricula = document.getElementById('alunoPreviewMatricula');
+    const alunoPreviewAvatar = document.getElementById('alunoPreviewAvatar');
+
+    function renderizarResultados(query) {
+        carregarDadosAlunos();
+        const termo = (query || '').trim().toLowerCase();
+
+        if (!termo) {
+            alunoResultadosList.innerHTML = '';
+            alunoResultadosList.style.display = 'none';
+            return;
+        }
+
+        const filtrados = listaAlunos.filter(aluno =>
             (aluno.nome && aluno.nome.toLowerCase().includes(termo)) ||
             (aluno.matricula && aluno.matricula.toLowerCase().includes(termo))
-    );
+        );
 
-    if (filtrados.length === 0) {
-      alunoResultadosList.innerHTML = `
+        if (filtrados.length === 0) {
+            alunoResultadosList.innerHTML = `
                     <div class="p-3 text-center text-muted small">
                         <i class="bi bi-person-x d-block fs-5 mb-1 text-secondary"></i>
                         Nenhum aluno ativo encontrado com "<strong>${termo}</strong>".
                     </div>
                 `;
-      alunoResultadosList.style.display = 'block';
-      return;
-    }
+            alunoResultadosList.style.display = 'block';
+            return;
+        }
 
-    let html = '';
-    filtrados.slice(0, 10).forEach(aluno => {
-      const iniciais = aluno.nome && aluno.nome.length >= 2 ? aluno.nome.substring(0, 2).toUpperCase() : 'AL';
-      const safeNome = (aluno.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      const safeMatricula = (aluno.matricula || '').replace(/'/g, "\\'");
-      html += `
+        let html = '';
+        filtrados.slice(0, 10).forEach(aluno => {
+            const iniciais = aluno.nome && aluno.nome.length >= 2 ? aluno.nome.substring(0, 2).toUpperCase() : 'AL';
+            const safeNome = (aluno.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeMatricula = (aluno.matricula || '').replace(/'/g, "\\'");
+            html += `
                     <button type="button" class="w-100 text-start border-0 bg-transparent p-2 rounded-3 d-flex align-items-center justify-content-between mb-1 text-decoration-none"
                          style="cursor: pointer; transition: background 0.15s ease;"
                          onmouseover="this.style.backgroundColor='#f1f5f9'"
@@ -520,103 +520,103 @@
                         <span class="badge bg-light text-dark border font-monospace ms-2">${aluno.matricula}</span>
                     </button>
                 `;
-    });
+        });
 
-    alunoResultadosList.innerHTML = html;
-    alunoResultadosList.style.display = 'block';
-  }
+        alunoResultadosList.innerHTML = html;
+        alunoResultadosList.style.display = 'block';
+    }
 
-  if (searchAlunoInput) {
-    searchAlunoInput.addEventListener('input', function () {
-      renderizarResultados(this.value);
-    });
+    if (searchAlunoInput) {
+        searchAlunoInput.addEventListener('input', function () {
+            renderizarResultados(this.value);
+        });
 
-    document.addEventListener('click', function(e) {
-      if (campoBuscaAlunoContainer && !campoBuscaAlunoContainer.contains(e.target)) {
+        document.addEventListener('click', function(e) {
+            if (campoBuscaAlunoContainer && !campoBuscaAlunoContainer.contains(e.target)) {
+                alunoResultadosList.style.display = 'none';
+            }
+        });
+    }
+
+    function executarBuscaAluno() {
+        if (searchAlunoInput) {
+            renderizarResultados(searchAlunoInput.value);
+            searchAlunoInput.focus();
+        }
+    }
+
+    function selecionarAluno(id, nome, matricula) {
+        alunoIdInput.value = id;
+        alunoPreviewNome.innerText = nome;
+        alunoPreviewMatricula.innerText = 'Matrícula: ' + matricula;
+        alunoPreviewAvatar.innerText = nome && nome.length >= 2 ? nome.substring(0, 2).toUpperCase() : 'AL';
+
+        campoBuscaAlunoContainer.classList.add('d-none');
         alunoResultadosList.style.display = 'none';
-      }
-    });
-  }
-
-  function executarBuscaAluno() {
-    if (searchAlunoInput) {
-      renderizarResultados(searchAlunoInput.value);
-      searchAlunoInput.focus();
-    }
-  }
-
-  function selecionarAluno(id, nome, matricula) {
-    alunoIdInput.value = id;
-    alunoPreviewNome.innerText = nome;
-    alunoPreviewMatricula.innerText = 'Matrícula: ' + matricula;
-    alunoPreviewAvatar.innerText = nome && nome.length >= 2 ? nome.substring(0, 2).toUpperCase() : 'AL';
-
-    campoBuscaAlunoContainer.classList.add('d-none');
-    alunoResultadosList.style.display = 'none';
-    alunoSelecionadoCard.classList.remove('d-none');
-    if (searchAlunoInput) searchAlunoInput.value = '';
-  }
-
-  function limparSelecaoAluno() {
-    alunoIdInput.value = '';
-    alunoSelecionadoCard.classList.add('d-none');
-    campoBuscaAlunoContainer.classList.remove('d-none');
-    if (searchAlunoInput) {
-      searchAlunoInput.value = '';
-      searchAlunoInput.focus();
-    }
-  }
-
-  // =========================================================================
-  // BUSCA E SELEÇÃO DE LIVROS DISPONÍVEIS (VIA REST API)
-  // =========================================================================
-  const searchLivroInput = document.getElementById('searchLivroInput');
-  const livroResultadosList = document.getElementById('livroResultadosList');
-  const livroIdInput = document.getElementById('livroId');
-  const campoBuscaLivroContainer = document.getElementById('campoBuscaLivroContainer');
-  const livroSelecionadoCard = document.getElementById('livroSelecionadoCard');
-  const livroPreviewTitulo = document.getElementById('livroPreviewTitulo');
-  const livroPreviewDetalhes = document.getElementById('livroPreviewDetalhes');
-  const livroPreviewAvatar = document.getElementById('livroPreviewAvatar');
-
-  let debounceTimerLivro;
-
-  async function renderizarResultadosLivros(query) {
-    const termo = (query || '').trim();
-
-    if (!termo) {
-      livroResultadosList.innerHTML = '';
-      livroResultadosList.style.display = 'none';
-      return;
+        alunoSelecionadoCard.classList.remove('d-none');
+        if (searchAlunoInput) searchAlunoInput.value = '';
     }
 
-    livroResultadosList.innerHTML = '<div class="p-3 text-center text-muted small"><i class="bi bi-hourglass-split me-1"></i> Buscando livros disponíveis...</div>';
-    livroResultadosList.style.display = 'block';
+    function limparSelecaoAluno() {
+        alunoIdInput.value = '';
+        alunoSelecionadoCard.classList.add('d-none');
+        campoBuscaAlunoContainer.classList.remove('d-none');
+        if (searchAlunoInput) {
+            searchAlunoInput.value = '';
+            searchAlunoInput.focus();
+        }
+    }
 
-    try {
-      const response = await fetch(`/api/livros/disponiveis?termo=${encodeURIComponent(termo)}`);
-      const livros = await response.json();
+    // =========================================================================
+    // BUSCA E SELEÇÃO DE LIVROS DISPONÍVEIS (VIA REST API)
+    // =========================================================================
+    const searchLivroInput = document.getElementById('searchLivroInput');
+    const livroResultadosList = document.getElementById('livroResultadosList');
+    const livroIdInput = document.getElementById('livroId');
+    const campoBuscaLivroContainer = document.getElementById('campoBuscaLivroContainer');
+    const livroSelecionadoCard = document.getElementById('livroSelecionadoCard');
+    const livroPreviewTitulo = document.getElementById('livroPreviewTitulo');
+    const livroPreviewDetalhes = document.getElementById('livroPreviewDetalhes');
+    const livroPreviewAvatar = document.getElementById('livroPreviewAvatar');
 
-      if (!livros || livros.length === 0) {
-        livroResultadosList.innerHTML = `
+    let debounceTimerLivro;
+
+    async function renderizarResultadosLivros(query) {
+        const termo = (query || '').trim();
+
+        if (!termo) {
+            livroResultadosList.innerHTML = '';
+            livroResultadosList.style.display = 'none';
+            return;
+        }
+
+        livroResultadosList.innerHTML = '<div class="p-3 text-center text-muted small"><i class="bi bi-hourglass-split me-1"></i> Buscando livros disponíveis...</div>';
+        livroResultadosList.style.display = 'block';
+
+        try {
+            const response = await fetch(`/api/livros/disponiveis?termo=${encodeURIComponent(termo)}`);
+            const livros = await response.json();
+
+            if (!livros || livros.length === 0) {
+                livroResultadosList.innerHTML = `
                         <div class="p-3 text-center text-muted small">
                             <i class="bi bi-book-half d-block fs-5 mb-1 text-secondary"></i>
                             Nenhum livro disponível encontrado com "<strong>${termo}</strong>".
                         </div>
                     `;
-        return;
-      }
+                return;
+            }
 
-      let html = '';
-      livros.slice(0, 10).forEach(livro => {
-        const iniciais = livro.titulo && livro.titulo.length >= 2 ? livro.titulo.substring(0, 2).toUpperCase() : 'LV';
-        const safeTitulo = (livro.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const safeAutor = (livro.autorNome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const safeIsbn = (livro.isbn || '').replace(/'/g, "\\'");
-        const exemplares = livro.quantidadeExemplares || 0;
-        const safeCategoria = (livro.categoriaNome || 'Geral').replace(/'/g, "\\'");
+            let html = '';
+            livros.slice(0, 10).forEach(livro => {
+                const iniciais = livro.titulo && livro.titulo.length >= 2 ? livro.titulo.substring(0, 2).toUpperCase() : 'LV';
+                const safeTitulo = (livro.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeAutor = (livro.autorNome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeIsbn = (livro.isbn || '').replace(/'/g, "\\'");
+                const exemplares = livro.quantidadeExemplares || 0;
+                const safeCategoria = (livro.categoriaNome || 'Geral').replace(/'/g, "\\'");
 
-        html += `
+                html += `
                         <button type="button" class="w-100 text-start border-0 bg-transparent p-2 rounded-3 d-flex align-items-center justify-content-between mb-1 text-decoration-none"
                              style="cursor: pointer; transition: background 0.15s ease;"
                              onmouseover="this.style.backgroundColor='#f1f5f9'"
@@ -638,97 +638,96 @@
                             </div>
                         </button>
                     `;
-      });
+            });
 
-      livroResultadosList.innerHTML = html;
-      livroResultadosList.style.display = 'block';
-    } catch (err) {
-      livroResultadosList.innerHTML = '<div class="p-3 text-center text-danger small">Erro ao carregar livros.</div>';
+            livroResultadosList.innerHTML = html;
+            livroResultadosList.style.display = 'block';
+        } catch (err) {
+            livroResultadosList.innerHTML = '<div class="p-3 text-center text-danger small">Erro ao carregar livros.</div>';
+        }
     }
-  }
 
-  if (searchLivroInput) {
-    searchLivroInput.addEventListener('input', function () {
-      clearTimeout(debounceTimerLivro);
-      debounceTimerLivro = setTimeout(() => {
-        renderizarResultadosLivros(this.value);
-      }, 200);
-    });
+    if (searchLivroInput) {
+        searchLivroInput.addEventListener('input', function () {
+            clearTimeout(debounceTimerLivro);
+            debounceTimerLivro = setTimeout(() => {
+                renderizarResultadosLivros(this.value);
+            }, 200);
+        });
 
-    document.addEventListener('click', function(e) {
-      if (campoBuscaLivroContainer && !campoBuscaLivroContainer.contains(e.target)) {
+        document.addEventListener('click', function(e) {
+            if (campoBuscaLivroContainer && !campoBuscaLivroContainer.contains(e.target)) {
+                livroResultadosList.style.display = 'none';
+            }
+        });
+    }
+
+    function executarBuscaLivro() {
+        if (searchLivroInput) {
+            renderizarResultadosLivros(searchLivroInput.value);
+            searchLivroInput.focus();
+        }
+    }
+
+    function selecionarLivro(id, titulo, autor, isbn, exemplares, categoria) {
+        livroIdInput.value = id;
+        livroPreviewTitulo.innerText = titulo;
+        livroPreviewDetalhes.innerText = `${autor} • ${categoria} • ${exemplares} exemplar(es)`;
+        livroPreviewAvatar.innerText = titulo && titulo.length >= 2 ? titulo.substring(0, 2).toUpperCase() : 'LV';
+
+        campoBuscaLivroContainer.classList.add('d-none');
         livroResultadosList.style.display = 'none';
-      }
+        livroSelecionadoCard.classList.remove('d-none');
+        if (searchLivroInput) searchLivroInput.value = '';
+    }
+
+    function limparSelecaoLivro() {
+        livroIdInput.value = '';
+        livroSelecionadoCard.classList.add('d-none');
+        campoBuscaLivroContainer.classList.remove('d-none');
+        if (searchLivroInput) {
+            searchLivroInput.value = '';
+            searchLivroInput.focus();
+        }
+    }
+
+    function configurarModalNovo() {
+        document.getElementById('formEmprestimo').reset();
+        limparSelecaoAluno();
+        limparSelecaoLivro();
+        carregarDadosAlunos();
+    }
+
+    function validarEnvioEmprestimo() {
+        if (!alunoIdInput.value) {
+            if (window.showToast) window.showToast('danger', 'Por favor, busque e selecione o aluno solicitante.');
+            else alert('Por favor, busque e selecione o aluno solicitante.');
+            if (searchAlunoInput) searchAlunoInput.focus();
+            return false;
+        }
+        if (!livroIdInput.value) {
+            if (window.showToast) window.showToast('danger', 'Por favor, busque e selecione o livro do acervo.');
+            else alert('Por favor, busque e selecione o livro do acervo.');
+            if (searchLivroInput) searchLivroInput.focus();
+            return false;
+        }
+        return true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        carregarDadosAlunos();
     });
-  }
 
-  function executarBuscaLivro() {
-    if (searchLivroInput) {
-      renderizarResultadosLivros(searchLivroInput.value);
-      searchLivroInput.focus();
+    const modalEmprestimo = document.getElementById('modalEmprestimo');
+    if (modalEmprestimo) {
+        modalEmprestimo.addEventListener('shown.bs.modal', function () {
+            carregarDadosAlunos();
+            if (!alunoIdInput.value && searchAlunoInput) {
+                searchAlunoInput.focus();
+            }
+        });
     }
-  }
-
-  function selecionarLivro(id, titulo, autor, isbn, exemplares, categoria) {
-    livroIdInput.value = id;
-    livroPreviewTitulo.innerText = titulo;
-    livroPreviewDetalhes.innerText = `${autor} • ${categoria} • ${exemplares} exemplar(es)`;
-    livroPreviewAvatar.innerText = titulo && titulo.length >= 2 ? titulo.substring(0, 2).toUpperCase() : 'LV';
-
-    campoBuscaLivroContainer.classList.add('d-none');
-    livroResultadosList.style.display = 'none';
-    livroSelecionadoCard.classList.remove('d-none');
-    if (searchLivroInput) searchLivroInput.value = '';
-  }
-
-  function limparSelecaoLivro() {
-    livroIdInput.value = '';
-    livroSelecionadoCard.classList.add('d-none');
-    campoBuscaLivroContainer.classList.remove('d-none');
-    if (searchLivroInput) {
-      searchLivroInput.value = '';
-      searchLivroInput.focus();
-    }
-  }
-
-  function configurarModalNovo() {
-    document.getElementById('formEmprestimo').reset();
-    limparSelecaoAluno();
-    limparSelecaoLivro();
-    carregarDadosAlunos();
-  }
-
-  function validarEnvioEmprestimo() {
-    if (!alunoIdInput.value) {
-      if (window.showToast) window.showToast('danger', 'Por favor, busque e selecione o aluno solicitante.');
-      else alert('Por favor, busque e selecione o aluno solicitante.');
-      if (searchAlunoInput) searchAlunoInput.focus();
-      return false;
-    }
-    if (!livroIdInput.value) {
-      if (window.showToast) window.showToast('danger', 'Por favor, busque e selecione o livro do acervo.');
-      else alert('Por favor, busque e selecione o livro do acervo.');
-      if (searchLivroInput) searchLivroInput.focus();
-      return false;
-    }
-    return true;
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    carregarDadosAlunos();
-  });
-
-  const modalEmprestimo = document.getElementById('modalEmprestimo');
-  if (modalEmprestimo) {
-    modalEmprestimo.addEventListener('shown.bs.modal', function () {
-      carregarDadosAlunos();
-      if (!alunoIdInput.value && searchAlunoInput) {
-        searchAlunoInput.focus();
-      }
-    });
-  }
 </script>
 </body>
-
 
 </html>
