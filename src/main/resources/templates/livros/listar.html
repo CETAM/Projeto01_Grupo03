@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livros - Sistema de Biblioteca</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Sidebar CSS -->
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+</head>
+
+<body>
+
+<div class="app-wrapper">
+    <!-- Sidebar Fragment Thymeleaf -->
+    <div th:replace="~{fragments/sidebar :: sidebar('livros')}"></div>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container-fluid p-0">
+            <!-- Cabeçalho da Página -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="page-title">Livros</h2>
+                    <p class="page-subtitle">Gerencie os livros do acervo, autores, editoras e categorias</p>
+                </div>
+                <!-- Botão Novo Livro -->
+                <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                        data-bs-toggle="modal" data-bs-target="#modalLivro" onclick="configurarModalNovo()">
+                    <i class="bi bi-plus-lg me-1"></i> Novo Livro
+                </button>
+            </div>
+
+            <!-- Alertas Customizáveis -->
+            <div th:if="${mensagemSucesso}" class="custom-alert custom-alert-success mb-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill alert-icon"></i>
+                    <span class="alert-content" th:text="${mensagemSucesso}">Mensagem de sucesso</span>
+                </div>
+                <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div th:if="${mensagemErro}" class="custom-alert custom-alert-danger mb-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-circle-fill alert-icon"></i>
+                    <span class="alert-content" th:text="${mensagemErro}">Mensagem de erro</span>
+                </div>
+                <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Card Minimalista de Listagem -->
+            <div class="content-card-minimal">
+                <!-- Formulário de Filtro / Busca Minimalista -->
+                <form th:action="@{/livros}" method="get" class="mb-4">
+                    <div class="d-flex align-items-center bg-light rounded-pill p-1 border w-100">
+                            <span class="ps-3 pe-2 text-secondary d-flex align-items-center">
+                                <i class="bi bi-search"></i>
+                            </span>
+                        <input type="text" name="titulo" th:value="${titulo}"
+                               class="form-control border-0 bg-transparent shadow-none fs-6 py-2"
+                               placeholder="Buscar livro por título...">
+
+                        <a th:if="${titulo != null && !#strings.isEmpty(titulo)}" th:href="@{/livros}"
+                           class="btn btn-link text-secondary text-decoration-none px-2 me-1" title="Limpar filtro">
+                            <i class="bi bi-x-circle fs-5"></i>
+                        </a>
+
+                        <button class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm me-1"
+                                style="width: 36px; height: 36px; min-width: 36px; padding: 0;"
+                                type="submit" title="Pesquisar" aria-label="Pesquisar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Tabela Minimalista de Livros -->
+                <div class="table-responsive-visible">
+                    <table class="table-minimal">
+                        <thead>
+                        <tr>
+                            <th style="width: 32%;">Título & Autor</th>
+                            <th style="width: 18%;">Editora</th>
+                            <th style="width: 16%;">Categoria</th>
+                            <th style="width: 12%;">Exemplares</th>
+                            <th style="width: 12%;">Status</th>
+                            <th style="width: 10%;" class="text-end pe-3">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="livro, iterStat : ${livros}">
+                            <!-- Coluna Título com Avatar e Autor -->
+                            <td class="ps-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-initial"
+                                         th:classappend="${iterStat.index % 4 == 0 ? 'avatar-blue' : (iterStat.index % 4 == 1 ? 'avatar-purple' : (iterStat.index % 4 == 2 ? 'avatar-emerald' : 'avatar-rose'))}"
+                                         th:text="${livro.titulo != null && #strings.length(livro.titulo) >= 2 ? #strings.toUpperCase(#strings.substring(livro.titulo, 0, 2)) : 'LV'}">
+                                        LV
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold" style="color: #0f172a; font-size: 0.95rem;" th:text="${livro.titulo}">Título do Livro</div>
+                                        <div class="text-muted small" th:if="${livro.autor != null}" th:text="${livro.autor.nome}">Autor</div>
+                                        <div class="text-muted small" th:unless="${livro.autor != null}">Sem autor informado</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Coluna Editora & Ano -->
+                            <td>
+                                <div th:if="${livro.editora != null}">
+                                    <div class="text-dark fw-medium" style="font-size: 0.9rem;" th:text="${livro.editora.nome}">Editora</div>
+                                    <div class="text-muted small" th:if="${livro.ano != null}" th:text="'Ano: ' + ${livro.ano}">2023</div>
+                                </div>
+                                <span th:unless="${livro.editora != null}" class="text-muted fst-italic small">Não informada</span>
+                            </td>
+
+                            <!-- Coluna Categoria -->
+                            <td>
+                                        <span th:if="${livro.categoria != null}" class="badge-soft-primary" th:text="${livro.categoria.nome}">
+                                            Ficção
+                                        </span>
+                                <span th:unless="${livro.categoria != null}" class="text-muted fst-italic small">
+                                            Geral
+                                        </span>
+                            </td>
+
+                            <!-- Coluna Exemplares em Estoque -->
+                            <td>
+                                        <span class="badge-soft-secondary text-dark fw-semibold">
+                                            <i class="bi bi-stack me-1 text-secondary"></i>
+                                            <span th:text="${livro.quantidadeExemplares != null ? livro.quantidadeExemplares : 0}">1</span>
+                                            <span th:text="${livro.quantidadeExemplares == 1 ? ' unid.' : ' unids.'}"> unid.</span>
+                                        </span>
+                            </td>
+
+                            <!-- Coluna Status de Disponibilidade -->
+                            <td>
+                                        <span th:if="${livro.disponivel && (livro.quantidadeExemplares == null || livro.quantidadeExemplares > 0)}" class="badge-soft-success">
+                                            <i class="bi bi-check-circle-fill"></i> Disponível
+                                        </span>
+                                <span th:unless="${livro.disponivel && (livro.quantidadeExemplares == null || livro.quantidadeExemplares > 0)}" class="badge-soft-secondary text-danger">
+                                            <i class="bi bi-x-circle-fill"></i> Esgotado
+                                        </span>
+                            </td>
+
+                            <!-- Coluna Ações com Ícone de Reticências (...) e Dropdown -->
+                            <td class="text-end pe-2">
+                                <div class="dropdown">
+                                    <button class="btn-action-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opções">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                                        <li>
+                                            <!-- Opção Editar -->
+                                            <button type="button" class="dropdown-item dropdown-item-action text-primary-action"
+                                                    data-bs-toggle="modal" data-bs-target="#modalLivro"
+                                                    th:data-id="${livro.id}"
+                                                    th:data-titulo="${livro.titulo}"
+                                                    th:data-isbn="${livro.isbn}"
+                                                    th:data-ano="${livro.ano}"
+                                                    th:data-exemplares="${livro.quantidadeExemplares}"
+                                                    th:data-autor-id="${livro.autor != null ? livro.autor.id : ''}"
+                                                    th:data-editora-id="${livro.editora != null ? livro.editora.id : ''}"
+                                                    th:data-categoria-id="${livro.categoria != null ? livro.categoria.id : ''}"
+                                                    th:data-disponivel="${livro.disponivel}"
+                                                    onclick="configurarModalEditar(this)">
+                                                <i class="bi bi-pencil-square text-primary fs-6"></i>
+                                                <span>Editar</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <!-- Opção Alternar Disponibilidade -->
+                                            <a class="dropdown-item dropdown-item-action text-warning-action"
+                                               th:href="@{/livros/disponibilidade/{id}(id=${livro.id})}">
+                                                <i class="bi bi-toggle2-on fs-6 text-warning" th:if="${livro.disponivel}"></i>
+                                                <i class="bi bi-toggle2-off fs-6 text-secondary" th:unless="${livro.disponivel}"></i>
+                                                <span th:text="${livro.disponivel ? 'Tornar Indisponível' : 'Tornar Disponível'}">Alternar</span>
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider my-1 opacity-25"></li>
+                                        <li>
+                                            <!-- Opção Excluir -->
+                                            <a class="dropdown-item dropdown-item-action text-danger-action"
+                                               th:href="@{/livros/excluir/{id}(id=${livro.id})}"
+                                               onclick="return confirmAction(event, this, 'Tem certeza de que deseja excluir este livro do acervo?', 'danger', 'Excluir Livro', 'Sim, Excluir');">
+                                                <i class="bi bi-trash3 text-danger fs-6"></i>
+                                                <span>Excluir</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Mensagem caso a lista esteja vazia -->
+                        <tr th:if="${#lists.isEmpty(livros)}">
+                            <td colspan="6" class="text-center py-5 text-secondary">
+                                <i class="bi bi-book fs-1 d-block mb-2 text-muted"></i>
+                                <h6 class="fw-semibold mb-1 text-dark">Nenhum livro encontrado</h6>
+                                <p class="small text-muted mb-0">Cadastre um novo livro clicando no botão "+ Novo Livro".</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL PRINCIPAL DE LIVRO -->
+<div class="modal fade" id="modalLivro" tabindex="-1" aria-labelledby="modalLivroLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-livro-dialog">
+        <div class="modal-content modal-livro-content p-4 border-0">
+            <form th:action="@{/livros/salvar}" method="post" id="formLivro">
+                <!-- Campo ID Oculto -->
+                <input type="hidden" id="livroId" name="id">
+
+                <!-- Cabeçalho Minimalista -->
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1" id="modalLivroLabel" style="color: #0f172a; font-size: 1.25rem; letter-spacing: -0.3px;">
+                            Novo Livro
+                        </h5>
+                        <p class="text-secondary small mb-0" id="modalLivroSubtitle">
+                            Preencha as informações da obra no acervo
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Corpo do Formulário -->
+                <div class="mb-3">
+                    <label for="livroTitulo" class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                        Título da Obra <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="livroTitulo" name="titulo"
+                           class="form-control form-control-minimal"
+                           placeholder="Ex: Dom Casmurro, Memórias Póstumas..."
+                           maxlength="200" required autocomplete="off">
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="livroIsbn" class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                            ISBN
+                        </label>
+                        <input type="text" id="livroIsbn" name="isbn"
+                               class="form-control form-control-minimal"
+                               placeholder="Ex: 978-85..."
+                               maxlength="50" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="livroAno" class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                            Ano Publicação
+                        </label>
+                        <input type="number" id="livroAno" name="ano"
+                               class="form-control form-control-minimal"
+                               placeholder="Ex: 2024" min="1500" max="2100">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="livroExemplares" class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                            Exemplares <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" id="livroExemplares" name="quantidadeExemplares"
+                               class="form-control form-control-minimal"
+                               placeholder="Ex: 5" min="0" max="9999" required value="1">
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="livroAutor" class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                            Autor <span class="text-danger">*</span>
+                        </label>
+                        <select id="livroAutor" name="autor.id" class="form-select form-select-minimal" required>
+                            <option value="">Selecione um autor...</option>
+                            <option th:each="autor : ${autores}" th:value="${autor.id}" th:text="${autor.nome}">Machado de Assis</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="livroEditora" class="form-label fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                            Editora <span class="text-danger">*</span>
+                        </label>
+                        <select id="livroEditora" name="editora.id" class="form-select form-select-minimal" required>
+                            <option value="">Selecione uma editora...</option>
+                            <option th:each="editora : ${editoras}" th:value="${editora.id}" th:text="${editora.nome}">Companhia das Letras</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Campo Categoria com Ação Rápida de Nova Categoria e Gerenciador -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label for="livroCategoria" class="form-label fw-semibold mb-0" style="color: #334155; font-size: 0.88rem;">
+                            Categoria
+                        </label>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-link text-primary text-decoration-none p-0 fw-semibold" style="font-size: 0.78rem;" onclick="abrirModalNovaCategoria()">
+                                <i class="bi bi-plus-circle me-1"></i> Nova Categoria
+                            </button>
+                            <span class="text-muted small">•</span>
+                            <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0 fw-semibold" style="font-size: 0.78rem;" onclick="abrirModalGerenciarCategorias()">
+                                <i class="bi bi-gear me-1"></i> Gerenciar
+                            </button>
+                        </div>
+                    </div>
+                    <select id="livroCategoria" name="categoria.id" class="form-select form-select-minimal">
+                        <option value="">Selecione uma categoria...</option>
+                        <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nome}">Ficção Científica</option>
+                    </select>
+                </div>
+
+                <!-- Switch de Disponibilidade -->
+                <div class="form-check form-switch mb-4 p-0 d-flex align-items-center justify-content-between bg-light rounded-3 p-3 border">
+                    <label class="form-check-label fw-semibold text-dark mb-0" for="livroDisponivel" style="font-size: 0.88rem;">
+                        <i class="bi bi-check-circle text-success me-1"></i> Livro Disponível para Empréstimo
+                    </label>
+                    <input class="form-check-input m-0 fs-5" type="checkbox" role="switch" id="livroDisponivel" name="disponivel" value="true" checked>
+                </div>
+
+                <!-- Ações Minimalistas -->
+                <div class="d-flex justify-content-end align-items-center gap-2 pt-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary border-0" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnSalvarLivro" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-check2 me-1"></i> Salvar Livro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MINI-MODAL DE CADASTRO RÁPIDO DE CATEGORIA -->
+<div class="modal fade" id="modalNovaCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 380px;">
+        <div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-tag text-primary me-1"></i> Nova Categoria
+                </h6>
+                <button type="button" class="btn-close-custom" onclick="fecharModalNovaCategoria()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="formNovaCategoria" onsubmit="salvarNovaCategoria(event)">
+                <div class="mb-3">
+                    <label for="catNome" class="form-label fw-semibold small text-secondary">Nome da Categoria <span class="text-danger">*</span></label>
+                    <input type="text" id="catNome" class="form-control form-control-minimal" placeholder="Ex: Ficção Científica, Romance..." required maxlength="100" autocomplete="off">
+                </div>
+                <div class="mb-3">
+                    <label for="catDescricao" class="form-label fw-semibold small text-secondary">Descrição (opcional)</label>
+                    <input type="text" id="catDescricao" class="form-control form-control-minimal" placeholder="Breve resumo sobre a categoria..." maxlength="255">
+                </div>
+                <div class="d-flex justify-content-end gap-2 pt-2">
+                    <button type="button" class="btn btn-light rounded-pill px-3 py-1 btn-sm fw-semibold text-muted" onclick="fecharModalNovaCategoria()">Cancelar</button>
+                    <button type="submit" id="btnSalvarNovaCat" class="btn btn-primary rounded-pill px-3 py-1 btn-sm fw-semibold shadow-sm">
+                        <i class="bi bi-check2 me-1"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE GERENCIAMENTO RÁPIDO DE CATEGORIAS -->
+<div class="modal fade" id="modalGerenciarCategorias" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+        <div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-tags text-primary me-1"></i> Gerenciar Categorias
+                </h6>
+                <button type="button" class="btn-close-custom" onclick="fecharModalGerenciarCategorias()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table class="table-minimal w-100">
+                        <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="categoriasTbody">
+                        <tr><td colspan="3" class="text-center py-3 text-muted">Carregando categorias...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-semibold" onclick="fecharModalGerenciarCategorias(); abrirModalNovaCategoria();">
+                    <i class="bi bi-plus-lg me-1"></i> Nova Categoria
+                </button>
+                <button type="button" class="btn btn-light rounded-pill px-3 py-1 btn-sm fw-semibold text-muted" onclick="fecharModalGerenciarCategorias()">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript para Controle do Modal Dinâmico e Categorias In-Place -->
+<script>
+    function configurarModalNovo() {
+        document.getElementById('formLivro').reset();
+        document.getElementById('livroId').value = '';
+        document.getElementById('livroAutor').value = '';
+        document.getElementById('livroEditora').value = '';
+        document.getElementById('livroCategoria').value = '';
+        document.getElementById('livroExemplares').value = '1';
+        document.getElementById('livroDisponivel').checked = true;
+
+        ['livroAutor', 'livroEditora', 'livroCategoria'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.dispatchEvent(new Event('change'));
+        });
+
+        document.getElementById('modalLivroLabel').innerText = 'Novo Livro';
+        document.getElementById('modalLivroSubtitle').innerText = 'Preencha as informações da obra no acervo';
+        document.getElementById('btnSalvarLivro').innerHTML = '<i class="bi bi-check2 me-1"></i> Salvar Livro';
+    }
+
+    function configurarModalEditar(botao) {
+        const id = botao.getAttribute('data-id');
+        const titulo = botao.getAttribute('data-titulo');
+        const isbn = botao.getAttribute('data-isbn');
+        const ano = botao.getAttribute('data-ano');
+        const exemplares = botao.getAttribute('data-exemplares');
+        const autorId = botao.getAttribute('data-autor-id');
+        const editoraId = botao.getAttribute('data-editora-id');
+        const categoriaId = botao.getAttribute('data-categoria-id');
+        const disponivel = botao.getAttribute('data-disponivel') === 'true';
+
+        document.getElementById('livroId').value = id;
+        document.getElementById('livroTitulo').value = titulo;
+        document.getElementById('livroIsbn').value = isbn ? isbn : '';
+        document.getElementById('livroAno').value = ano ? ano : '';
+        document.getElementById('livroExemplares').value = exemplares ? exemplares : '1';
+        document.getElementById('livroAutor').value = autorId ? autorId : '';
+        document.getElementById('livroEditora').value = editoraId ? editoraId : '';
+        document.getElementById('livroCategoria').value = categoriaId ? categoriaId : '';
+        document.getElementById('livroDisponivel').checked = disponivel;
+
+        ['livroAutor', 'livroEditora', 'livroCategoria'].forEach(elemId => {
+            const el = document.getElementById(elemId);
+            if (el) el.dispatchEvent(new Event('change'));
+        });
+
+        document.getElementById('modalLivroLabel').innerText = 'Editar Livro';
+        document.getElementById('modalLivroSubtitle').innerText = 'Altere as informações da obra';
+        document.getElementById('btnSalvarLivro').innerHTML = '<i class="bi bi-check2 me-1"></i> Atualizar Livro';
+    }
+
+    // =========================================================================
+    // GESTÃO RÁPIDA DE CATEGORIAS (AJAX / REST API)
+    // =========================================================================
+
+    function abrirModalNovaCategoria() {
+        document.getElementById('formNovaCategoria').reset();
+        const modalEl = document.getElementById('modalNovaCategoria');
+        const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        bsModal.show();
+    }
+
+    function fecharModalNovaCategoria() {
+        const modalEl = document.getElementById('modalNovaCategoria');
+        const bsModal = bootstrap.Modal.getInstance(modalEl);
+        if (bsModal) bsModal.hide();
+    }
+
+    async function salvarNovaCategoria(event) {
+        event.preventDefault();
+        const nome = document.getElementById('catNome').value.trim();
+        const descricao = document.getElementById('catDescricao').value.trim();
+
+        if (!nome) {
+            if (window.showToast) window.showToast('danger', 'O nome da categoria é obrigatório.');
+            return;
+        }
+
+        const btn = document.getElementById('btnSalvarNovaCat');
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/categorias', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, descricao })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.mensagem || 'Erro ao criar categoria.');
+            }
+
+            const novaCategoria = await response.json();
+
+            // Adiciona ao select e seleciona automaticamente
+            const selectCategoria = document.getElementById('livroCategoria');
+            const opt = document.createElement('option');
+            opt.value = novaCategoria.id;
+            opt.textContent = novaCategoria.nome;
+            opt.selected = true;
+            selectCategoria.appendChild(opt);
+
+            fecharModalNovaCategoria();
+            if (window.showToast) {
+                window.showToast('success', `Categoria "${novaCategoria.nome}" criada com sucesso!`);
+            }
+        } catch (error) {
+            if (window.showToast) {
+                window.showToast('danger', error.message);
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function abrirModalGerenciarCategorias() {
+        carregarTabelaCategorias();
+        const modalEl = document.getElementById('modalGerenciarCategorias');
+        const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        bsModal.show();
+    }
+
+    function fecharModalGerenciarCategorias() {
+        const modalEl = document.getElementById('modalGerenciarCategorias');
+        const bsModal = bootstrap.Modal.getInstance(modalEl);
+        if (bsModal) bsModal.hide();
+    }
+
+    async function carregarTabelaCategorias() {
+        const tbody = document.getElementById('categoriasTbody');
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted small">Carregando...</td></tr>';
+
+        try {
+            const response = await fetch('/api/categorias');
+            const categorias = await response.json();
+
+            if (!categorias || categorias.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted small">Nenhuma categoria cadastrada.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            categorias.forEach(cat => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                        <td class="fw-semibold text-dark small">${cat.nome}</td>
+                        <td class="text-muted small">${cat.descricao || '-'}</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" title="Excluir Categoria" onclick="excluirCategoria(${cat.id}, '${cat.nome}')">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </td>
+                    `;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-danger small">Erro ao carregar categorias.</td></tr>';
+        }
+    }
+
+    async function excluirCategoria(id, nome) {
+        if (!confirm(`Deseja realmente excluir a categoria "${nome}"?`)) return;
+
+        try {
+            const response = await fetch(`/api/categorias/${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.mensagem || 'Erro ao excluir categoria.');
+            }
+
+            // Remove do select
+            const selectCategoria = document.getElementById('livroCategoria');
+            const opt = selectCategoria.querySelector(`option[value="${id}"]`);
+            if (opt) opt.remove();
+
+            carregarTabelaCategorias();
+            if (window.showToast) window.showToast('success', `Categoria "${nome}" excluída com sucesso!`);
+        } catch (err) {
+            if (window.showToast) window.showToast('danger', err.message);
+        }
+    }
+</script>
+</body>
+
+</html>
