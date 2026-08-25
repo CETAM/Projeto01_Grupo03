@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Relatório de Empréstimos - PDF</title>
+  <style>
+    @page {
+        size: A4 landscape;
+        margin: 12mm 15mm 15mm 15mm;
+        @bottom-left {
+            content: "Sistema de Controle de Biblioteca - Relatório Oficial";
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+        @bottom-right {
+            content: "Página " counter(page) " de " counter(pages);
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+    }
+
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        margin: 0;
+        padding: 0;
+        font-size: 9.5pt;
+        line-height: 1.35;
+    }
+
+    .header-container {
+        border-bottom: 2px solid #2563eb;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+    }
+
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .header-table td {
+        vertical-align: middle;
+        border: none;
+        padding: 0;
+    }
+
+    .system-title {
+        font-size: 16pt;
+        font-weight: bold;
+        color: #1e3a8a;
+        margin: 0;
+    }
+
+    .report-subtitle {
+        font-size: 11pt;
+        color: #475569;
+        margin-top: 2px;
+    }
+
+    .meta-box {
+        text-align: right;
+        font-size: 8.5pt;
+        color: #64748b;
+    }
+
+    .filter-banner {
+        background-color: #f1f5f9;
+        border-radius: 4px;
+        padding: 6px 12px;
+        margin-bottom: 12px;
+        font-size: 8.5pt;
+        color: #334155;
+        border-left: 3px solid #3b82f6;
+    }
+
+    .filter-banner span {
+        margin-right: 15px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+    }
+
+    .data-table thead {
+        display: table-header-group;
+    }
+
+    .data-table th {
+        background-color: #1e293b;
+        color: #ffffff;
+        font-size: 8.5pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 7px 8px;
+        text-align: left;
+        border: 1px solid #1e293b;
+    }
+
+    .data-table th.text-center {
+        text-align: center;
+    }
+
+    .data-table tr {
+        page-break-inside: avoid;
+    }
+
+    .data-table td {
+        padding: 6px 8px;
+        border: 1px solid #e2e8f0;
+        font-size: 8.5pt;
+    }
+
+    .data-table tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-muted {
+        color: #64748b;
+        font-size: 7.5pt;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 7px;
+        font-size: 7.5pt;
+        font-weight: bold;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .badge-ativo {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .badge-devolvido {
+        background-color: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-atrasado {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+    .summary-footer {
+        margin-top: 14px;
+        padding-top: 6px;
+        border-top: 1px dashed #cbd5e1;
+        font-size: 8.5pt;
+        color: #475569;
+        text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header-container">
+  <table class="header-table">
+    <tr>
+      <td>
+        <div class="system-title">Sistema de Biblioteca</div>
+        <div class="report-subtitle">Relatório Gerencial de Empréstimos</div>
+      </td>
+      <td class="meta-box">
+        <div><strong>Data de Emissão:</strong> <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">24/08/2026 09:00</span></div>
+        <div><strong>Total de Registros:</strong> <span th:text="${totalRegistros}">0</span></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="filter-banner">
+  <strong>Filtros Aplicados:</strong>
+  <span>Período: <strong th:text="${(dataInicio != null ? #temporals.format(dataInicio, 'dd/MM/yyyy') : 'Início') + ' até ' + (dataFim != null ? #temporals.format(dataFim, 'dd/MM/yyyy') : 'Hoje')}">Todos</strong></span>
+  <span>Status: <strong th:text="${statusSelecionado != null ? statusSelecionado : 'Todos'}">Todos</strong></span>
+</div>
+
+<table class="data-table">
+  <thead>
+  <tr>
+    <th style="width: 5%;" class="text-center">#ID</th>
+    <th style="width: 25%;">Aluno / Matrícula</th>
+    <th style="width: 30%;">Livro / Autor</th>
+    <th style="width: 13%;" class="text-center">Data Empréstimo</th>
+    <th style="width: 13%;" class="text-center">Previsão Devolução</th>
+    <th style="width: 14%;" class="text-center">Status</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:if="${#lists.isEmpty(emprestimos)}">
+    <td colspan="6" class="text-center" style="padding: 20px; color: #64748b;">
+      Nenhum empréstimo localizado para os critérios informados.
+    </td>
+  </tr>
+  <tr th:each="emp : ${emprestimos}">
+    <td class="text-center" style="font-weight: bold; color: #475569;" th:text="${'#' + emp.id}">#1</td>
+    <td>
+      <strong th:text="${emp.aluno.nome}">Nome do Aluno</strong><br/>
+      <span class="text-muted" th:text="${'Matrícula: ' + emp.aluno.matricula}">Matrícula: 12345</span>
+    </td>
+    <td>
+      <strong th:text="${emp.livro.titulo}">Título do Livro</strong><br/>
+      <span class="text-muted" th:text="${emp.livro.autor != null ? emp.livro.autor.nome : '-'}">Autor</span>
+    </td>
+    <td class="text-center" th:text="${#temporals.format(emp.dataEmprestimo, 'dd/MM/yyyy')}">01/01/2026</td>
+    <td class="text-center">
+      <span th:text="${#temporals.format(emp.dataPrevisaoDevolucao, 'dd/MM/yyyy')}">15/01/2026</span>
+      <span th:if="${emp.dataDevolucao != null}"><br/><span class="text-muted" th:text="${'(Devolvido: ' + #temporals.format(emp.dataDevolucao, 'dd/MM/yyyy') + ')'}"></span></span>
+    </td>
+    <td class="text-center">
+                    <span class="badge"
+                          th:classappend="${emp.status.name() == 'ATIVO' ? 'badge-ativo' : (emp.status.name() == 'DEVOLVIDO' ? 'badge-devolvido' : 'badge-atrasado')}"
+                          th:text="${emp.status}">ATIVO</span>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="summary-footer">
+  Documento gerado automaticamente pelo Sistema de Controle de Biblioteca em <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy às HH:mm')}">24/08/2026</span>.
+</div>
+
+</body>
+</html>
