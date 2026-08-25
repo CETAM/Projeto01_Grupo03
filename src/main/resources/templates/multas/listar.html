@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multas - Sistema de Biblioteca</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+</head>
+
+<body>
+
+      <div class="app-wrapper">
+
+      <div th:replace="~{fragments/sidebar :: sidebar('multas')}"></div>
+
+        <main class="main-content">
+          <div class="container-fluid p-0">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2 class="page-title">Multas</h2>
+                <p class="page-subtitle">Controle financeiro de penalidades, pendências e quitações</p>
+              </div>
+            </div>
+
+            <div th:if="${mensagemSucesso}" class="custom-alert custom-alert-success mb-3" role="alert">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill alert-icon"></i>
+                <span class="alert-content" th:text="${mensagemSucesso}"></span>
+              </div>
+              <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div th:if="${mensagemErro}" class="custom-alert custom-alert-danger mb-3" role="alert">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-circle-fill alert-icon"></i>
+                <span class="alert-content" th:text="${mensagemErro}"></span>
+              </div>
+              <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Fechar">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div class="row g-4 mb-4">
+
+              <div class="col-md-4">
+                <div class="stat-card-minimal">
+                  <div class="stat-icon-circle stat-icon-rose">
+                    <i class="bi bi-wallet2"></i>
+                  </div>
+                  <div>
+                    <div class="text-secondary small fw-medium mb-1">Total Pendente</div>
+                    <h3 class="fw-bold mb-0" style="color: #0f172a;"
+                        th:text="${'R$ ' + (totalPendente != null ? #numbers.formatDecimal(totalPendente, 1, 'POINT', 2, 'COMMA') : '0,00')}">
+                      R$ 840,00
+                    </h3>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="stat-card-minimal">
+                  <div class="stat-icon-circle stat-icon-emerald">
+                    <i class="bi bi-check-circle"></i>
+                  </div>
+                  <div>
+                    <div class="text-secondary small fw-medium mb-1">Total Recebido</div>
+                    <h3 class="fw-bold mb-0" style="color: #0f172a;"
+                        th:text="${'R$ ' + (totalRecebido != null ? #numbers.formatDecimal(totalRecebido, 1, 'POINT', 2, 'COMMA') : '0,00')}">
+                      R$ 1.250,00
+                    </h3>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="stat-card-minimal">
+                  <div class="stat-icon-circle stat-icon-blue">
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div>
+                    <div class="text-secondary small fw-medium mb-1">Alunos em Atraso</div>
+                    <h3 class="fw-bold mb-0" style="color: #0f172a;" th:text="${totalAlunosEmAtraso != null ? totalAlunosEmAtraso : 0}">
+                      45
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="content-card-minimal">
+
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <h4 class="fw-bold mb-0" style="color: #0f172a; letter-spacing: -0.3px;">Multas Ativas</h4>
+
+                <form th:action="@{/multas}" method="get" class="d-flex align-items-center bg-light rounded-pill p-1 border flex-fill flex-md-grow-0" style="max-width: 420px; width: 100%;">
+                            <span class="ps-3 pe-2 text-secondary d-flex align-items-center">
+                                <i class="bi bi-search"></i>
+                            </span>
+                  <input type="text" name="termo" th:value="${termo}"
+                         class="form-control border-0 bg-transparent shadow-none fs-6 py-1"
+                         placeholder="Buscar por aluno ou matrícula...">
+
+                  <a th:if="${termo != null && !#strings.isEmpty(termo)}" th:href="@{/multas}"
+                     class="btn btn-link text-secondary text-decoration-none px-2 me-1" title="Limpar busca">
+                    <i class="bi bi-x-circle fs-6"></i>
+                  </a>
+
+                  <button class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm me-1"
+                          style="width: 34px; height: 34px; min-width: 34px; padding: 0;"
+                          type="submit" title="Buscar" aria-label="Buscar">
+                    <i class="bi bi-search" style="font-size: 0.85rem;"></i>
+                  </button>
+                </form>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table-minimal">
+                  <thead>
+                  <tr>
+                    <th style="width: 28%;">Aluno</th>
+                    <th style="width: 30%;">Livro</th>
+                    <th style="width: 14%;" class="text-center">Dias Atraso</th>
+                    <th style="width: 14%;">Valor (R$)</th>
+                    <th style="width: 14%;">Status</th>
+                    <th style="width: 14%;" class="text-end pe-3">Ação</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="m, iterStat : ${multas}">
+
+                    <td class="ps-2">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-initial"
+                             th:classappend="${iterStat.index % 4 == 0 ? 'avatar-blue' : (iterStat.index % 4 == 1 ? 'avatar-purple' : (iterStat.index % 4 == 2 ? 'avatar-emerald' : 'avatar-rose'))}"
+                             th:text="${m.emprestimo != null && m.emprestimo.aluno != null && #strings.length(m.emprestimo.aluno.nome) >= 2 ? #strings.toUpperCase(#strings.substring(m.emprestimo.aluno.nome, 0, 2)) : 'AL'}">
+                          MC
+                        </div>
+                        <div>
+                          <div class="fw-bold text-dark" style="font-size: 0.95rem;"
+                               th:text="${m.emprestimo != null && m.emprestimo.aluno != null ? m.emprestimo.aluno.nome : 'Aluno'}">
+                            Maria Costa
+                          </div>
+                          <div class="text-muted small"
+                               th:text="${m.emprestimo != null && m.emprestimo.aluno != null ? 'Matrícula: ' + m.emprestimo.aluno.matricula : ''}">
+                            Matrícula: 2023001
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="fw-semibold text-dark" style="font-size: 0.93rem;"
+                           th:text="${m.emprestimo != null && m.emprestimo.livro != null ? m.emprestimo.livro.titulo : 'Obra'}">
+                        O Senhor dos Anéis: A Sociedade...
+                      </div>
+                      <div class="text-muted small"
+                           th:if="${m.emprestimo != null && m.emprestimo.livro != null && m.emprestimo.livro.isbn != null}"
+                           th:text="${'ISBN: ' + m.emprestimo.livro.isbn}">
+                        ISBN: 9788533613379
+                      </div>
+                    </td>
+
+                    <td class="text-center">
+                      <span class="fw-bold"
+                            th:classappend="${m.status.name() == 'PENDENTE' ? 'text-danger' : 'text-secondary'}"
+                            th:text="${m.diasAtraso}">
+                        12
+                      </span>
+                    </td>
+
+                    <td>
+                      <span class="fw-bold text-dark"
+                            th:text="${'R$ ' + (m.valor != null ? #numbers.formatDecimal(m.valor, 1, 'POINT', 2, 'COMMA') : '0,00')}">
+                        R$ 24,00
+                      </span>
+                    </td>
+
+                    <td>
+                      <span th:if="${m.status.name() == 'PENDENTE'}" class="badge-soft-danger">
+                        Pendente
+                      </span>
+                      <span th:if="${m.status.name() == 'PAGO'}" class="badge-soft-success">
+                        Pago
+                      </span>
+                    </td>
+
+                    <td class="text-end pe-2">
+                      <a th:if="${m.status.name() == 'PENDENTE'}"
+                         th:href="@{/multas/pagar/{id}(id=${m.id})}"
+                         class="btn btn-primary rounded-pill px-3 py-1 fw-semibold shadow-sm text-nowrap"
+                         style="font-size: 0.85rem;"
+                         onclick="return confirmAction(event, this, 'Confirmar o recebimento e quitação desta multa no valor correspondente?', 'success', 'Quitar Multa', 'Confirmar Recebimento');">
+                        <i class="bi bi-check2 me-1"></i> Receber
+                      </a>
+
+                      <div th:if="${m.status.name() == 'PAGO'}" class="text-secondary small d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-clock-history text-muted"></i>
+                        <span th:text="${m.dataPagamento != null ? #temporals.format(m.dataPagamento, 'dd/MM/yyyy') : (m.dataGeracao != null ? #temporals.format(m.dataGeracao, 'dd/MM/yyyy') : 'Pago')}">
+                          12/10/2023
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr th:if="${#lists.isEmpty(multas)}">
+                    <td colspan="6" class="text-center py-5 text-secondary">
+                        <i class="bi bi-shield-check fs-1 d-block mb-2 text-success opacity-75"></i>
+                        <h6 class="fw-semibold mb-1 text-dark">Nenhuma multa registrada</h6>
+                        <p class="small text-muted mb-0">Todas as devoluções estão regulares ou sem pendências financeiras no momento.</p>
+                     </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+
+      <!-- Bootstrap 5 Bundle JS -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
