@@ -24,7 +24,7 @@ public class AutorController {
     public String listar(@RequestParam(name = "nome", required = false) String nome, Model model) {
         model.addAttribute("autores", autorService.listarTodos(nome));
         model.addAttribute("nome", nome);
-        return "autores/listar";
+        return "formulario";
     }
 
     
@@ -32,7 +32,7 @@ public class AutorController {
     @GetMapping("/novo")
     public String exibirFormularioCadastro(Model model) {
         model.addAttribute("autor", new Autor());
-        return "autores/formulario";
+        return "ss";
     }
 
     
@@ -42,7 +42,7 @@ public class AutorController {
         try {
             Autor autor = autorService.buscarPorId(id);
             model.addAttribute("autor", autor);
-            return "autores/formulario";
+            return "ss";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Autor não encontrado.");
             return "redirect:/autores";
@@ -57,7 +57,7 @@ public class AutorController {
                          RedirectAttributes redirectAttributes) {
         if (autor.getNome() == null || autor.getNome().trim().isEmpty()) {
             model.addAttribute("mensagemErro", "O nome do autor é obrigatório.");
-            return "autores/formulario";
+            return "ss";
         }
 
         autorService.salvar(autor);
