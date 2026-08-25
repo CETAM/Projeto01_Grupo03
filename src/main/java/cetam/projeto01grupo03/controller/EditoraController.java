@@ -54,7 +54,7 @@ public class EditoraController {
 
         editoraService.salvar(editora);
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Editora salva com sucesso!");
-        return "redirect: /editoras";
+        return "redirect:/editoras";
     }
 
     @GetMapping("/excluir/{id}")

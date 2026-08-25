@@ -61,8 +61,8 @@ public class AlunoController {
         }
 
         alunoService.salvar(aluno);
-        redirectAttributes.addFlashAttribute("menssagemSucesso", "Aluno salvo com sucesso!");
-        return "redirect:/Alunos";
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno salvo com sucesso!");
+        return "redirect:/alunos";
     }
 
     @GetMapping("/status/{id}")
