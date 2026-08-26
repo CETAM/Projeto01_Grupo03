@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS emprestimos (
     data_previsao_devolucao DATE,
     data_devolucao DATE,
     status VARCHAR(20) NOT NULL,
+    quantidade_renovacoes INT NOT NULL DEFAULT 0,
     CONSTRAINT fk_emprestimo_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_aluno),
     CONSTRAINT fk_emprestimo_livro FOREIGN KEY (id_livro) REFERENCES livros(id_livro),
     CONSTRAINT chk_status_emprestimo CHECK (status IN ('ATIVO', 'DEVOLVIDO', 'ATRASADO'))
@@ -72,3 +73,42 @@ CREATE TABLE IF NOT EXISTS multas (
     CONSTRAINT fk_multa_emprestimo FOREIGN KEY (id_emprestimo) REFERENCES emprestimos(id_emprestimo),
     CONSTRAINT chk_status_multa CHECK (status IN ('PENDENTE', 'PAGO'))
 );
+
+-- 8. Tabela: configuracoes_sistema
+CREATE TABLE IF NOT EXISTS configuracoes_sistema (
+    id_config BIGINT PRIMARY KEY,
+    dias_prazo_emprestimo INT NOT NULL DEFAULT 14,
+    dias_prazo_renovacao INT NOT NULL DEFAULT 14,
+    limite_livros_simultaneos INT NOT NULL DEFAULT 3,
+    maximo_renovacoes_permitidas INT NOT NULL DEFAULT 2,
+    valor_multa_por_dia DECIMAL(10, 2) NOT NULL DEFAULT 2.00,
+    dias_tolerancia_atraso INT NOT NULL DEFAULT 0,
+    bloquear_emprestimo_com_multa_pendente BOOLEAN NOT NULL DEFAULT FALSE,
+    nome_instituicao VARCHAR(150) NOT NULL DEFAULT 'Sistema de Biblioteca',
+    texto_rodape_relatorio VARCHAR(255) NOT NULL DEFAULT 'Sistema de Controle de Biblioteca - Relatório Oficial'
+);
+
+-- Carga inicial de configurações padrão (se não existir)
+INSERT INTO configuracoes_sistema (
+    id_config,
+    dias_prazo_emprestimo,
+    dias_prazo_renovacao,
+    limite_livros_simultaneos,
+    maximo_renovacoes_permitidas,
+    valor_multa_por_dia,
+    dias_tolerancia_atraso,
+    bloquear_emprestimo_com_multa_pendente,
+    nome_instituicao,
+    texto_rodape_relatorio
+) VALUES (
+    1,
+    14,
+    14,
+    3,
+    2,
+    2.00,
+    0,
+    FALSE,
+    'Sistema de Biblioteca',
+    'Sistema de Controle de Biblioteca - Relatório Oficial'
+) ON DUPLICATE KEY UPDATE id_config = id_config;

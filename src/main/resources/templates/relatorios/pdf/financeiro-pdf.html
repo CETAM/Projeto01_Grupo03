@@ -227,7 +227,7 @@
   <table class="header-table">
     <tr>
       <td>
-        <div class="system-title">Sistema de Biblioteca</div>
+        <div class="system-title" th:text="${nomeInstituicao != null ? nomeInstituicao : 'Sistema de Biblioteca'}">Sistema de Biblioteca</div>
         <div class="report-subtitle">Demonstrativo Financeiro de Multas</div>
       </td>
       <td class="meta-box">
@@ -306,7 +306,7 @@
 </table>
 
 <div class="summary-footer">
-  Documento gerado automaticamente pelo Sistema de Controle de Biblioteca em <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy às HH:mm')}">24/08/2026</span>.
+  <span th:text="${textoRodapeRelatorio != null ? textoRodapeRelatorio : 'Documento gerado automaticamente pelo Sistema de Controle de Biblioteca'}">Documento gerado automaticamente pelo Sistema de Controle de Biblioteca</span> em <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy às HH:mm')}">24/08/2026</span>.
 </div>
 
 </body>

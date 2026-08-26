@@ -17,21 +17,22 @@ import java.util.NoSuchElementException;
 @Service
 public class EmprestimoService {
 
-    private static final BigDecimal VALOR_MULTA_POR_DIA = new BigDecimal("2.00");
-
     private final EmprestimoRepository emprestimoRepository;
     private final LivroRepository livroRepository;
     private final AlunoRepository alunoRepository;
     private final MultaRepository multaRepository;
+    private final ConfigSistemaService configSistemaService;
 
     public EmprestimoService(EmprestimoRepository emprestimoRepository,
                              LivroRepository livroRepository,
                              AlunoRepository alunoRepository,
-                             MultaRepository multaRepository) {
+                             MultaRepository multaRepository,
+                             ConfigSistemaService configSistemaService) {
         this.emprestimoRepository = emprestimoRepository;
         this.livroRepository = livroRepository;
         this.alunoRepository = alunoRepository;
         this.multaRepository = multaRepository;
+        this.configSistemaService = configSistemaService;
     }
 
     @Transactional
@@ -61,7 +62,6 @@ public class EmprestimoService {
         return emprestimoRepository.findAll();
     }
 
-
     public Emprestimo buscarPorId(Long id) {
         return emprestimoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Empréstimo não encontrado com o ID: " + id));
@@ -69,6 +69,8 @@ public class EmprestimoService {
 
     @Transactional
     public Emprestimo realizarEmprestimo(Long alunoId, Long livroId) {
+        ConfigSistema config = configSistemaService.obterConfiguracoes();
+
         Aluno aluno = alunoRepository.findById(alunoId)
                 .orElseThrow(() -> new NoSuchElementException("Aluno não encontrado com o ID: " + alunoId));
 
@@ -84,18 +86,21 @@ public class EmprestimoService {
             throw new IllegalStateException("O aluno " + aluno.getNome() + " possui empréstimo(s) em atraso e não pode realizar novos empréstimos até regularizar a devolução.");
         }
 
-        // Bloqueio se houver multas financeiras pendentes de quitação
-        boolean possuiMultasPendentes = multaRepository.existsByEmprestimoAlunoIdAndStatus(alunoId, StatusMulta.PENDENTE);
-        if (possuiMultasPendentes) {
-            throw new IllegalStateException("O aluno " + aluno.getNome() + " possui multas pendentes de pagamento e não pode realizar novos empréstimos.");
+        // Bloqueio configurável se houver multas financeiras pendentes de quitação
+        if (Boolean.TRUE.equals(config.getBloquearEmprestimoComMultaPendente())) {
+            boolean possuiMultasPendentes = multaRepository.existsByEmprestimoAlunoIdAndStatus(alunoId, StatusMulta.PENDENTE);
+            if (possuiMultasPendentes) {
+                throw new IllegalStateException("O aluno " + aluno.getNome() + " possui multas pendentes de pagamento e a biblioteca bloqueia novos empréstimos até a quitação.");
+            }
         }
 
-        // Limite máximo de 3 livros simultâneos
+        // Limite dinâmico de livros simultâneos por aluno
+        int limiteMaximo = config.getLimiteLivrosSimultaneos() != null ? config.getLimiteLivrosSimultaneos() : 3;
         long emprestimosEmAberto = emprestimoRepository.findByAlunoId(alunoId).stream()
                 .filter(e -> e.getStatus() == StatusEmprestimo.ATIVO || e.getStatus() == StatusEmprestimo.ATRASADO)
                 .count();
-        if (emprestimosEmAberto >= 3) {
-            throw new IllegalStateException("O aluno " + aluno.getNome() + " já possui 3 livros em aberto (limite máximo atingido).");
+        if (emprestimosEmAberto >= limiteMaximo) {
+            throw new IllegalStateException("O aluno " + aluno.getNome() + " já possui " + emprestimosEmAberto + " livro(s) em aberto (limite máximo de " + limiteMaximo + " atingido).");
         }
 
         Livro livro = livroRepository.findById(livroId)
@@ -106,11 +111,14 @@ public class EmprestimoService {
             throw new IllegalStateException("O livro '" + livro.getTitulo() + "' não possui exemplares disponíveis no momento.");
         }
 
+        int diasPrazo = config.getDiasPrazoEmprestimo() != null ? config.getDiasPrazoEmprestimo() : 14;
+
         Emprestimo emprestimo = new Emprestimo();
         emprestimo.setAluno(aluno);
         emprestimo.setLivro(livro);
         emprestimo.setDataEmprestimo(LocalDate.now());
-        emprestimo.setDataPrevisaoDevolucao(LocalDate.now().plusDays(14));
+        emprestimo.setDataPrevisaoDevolucao(LocalDate.now().plusDays(diasPrazo));
+        emprestimo.setQuantidadeRenovacoes(0);
         emprestimo.setStatus(StatusEmprestimo.ATIVO);
 
         // Decrementa exemplar
@@ -125,6 +133,7 @@ public class EmprestimoService {
 
     @Transactional
     public Emprestimo renovarEmprestimo(Long id) {
+        ConfigSistema config = configSistemaService.obterConfiguracoes();
         Emprestimo emprestimo = buscarPorId(id);
 
         if (emprestimo.getStatus() == StatusEmprestimo.DEVOLVIDO) {
@@ -132,16 +141,26 @@ public class EmprestimoService {
         }
 
         if (LocalDate.now().isAfter(emprestimo.getDataPrevisaoDevolucao())) {
-            throw new IllegalStateException("Não é possível renovar um empréstimo com devolução atrasada. É necessário realizar a devolução e quitar multas pendentes.");
+            throw new IllegalStateException("Não é possível renovar um empréstimo com devolução atrasada. É necessário realizar a devolução e quitar eventuais pendências.");
         }
 
-        emprestimo.setDataPrevisaoDevolucao(emprestimo.getDataPrevisaoDevolucao().plusDays(14));
+        // Validação de limite de renovações permitidas
+        int maxRenovacoes = config.getMaximoRenovacoesPermitidas() != null ? config.getMaximoRenovacoesPermitidas() : 2;
+        int renovacoesAtuais = emprestimo.getQuantidadeRenovacoes() != null ? emprestimo.getQuantidadeRenovacoes() : 0;
+        if (renovacoesAtuais >= maxRenovacoes) {
+            throw new IllegalStateException("Limite máximo de " + maxRenovacoes + " renovação(ões) consecutiva(s) atingido para este empréstimo.");
+        }
+
+        int diasRenovacao = config.getDiasPrazoRenovacao() != null ? config.getDiasPrazoRenovacao() : 14;
+        emprestimo.setDataPrevisaoDevolucao(emprestimo.getDataPrevisaoDevolucao().plusDays(diasRenovacao));
+        emprestimo.setQuantidadeRenovacoes(renovacoesAtuais + 1);
         emprestimo.setStatus(StatusEmprestimo.ATIVO);
         return emprestimoRepository.save(emprestimo);
     }
 
     @Transactional
     public Emprestimo devolverLivro(Long emprestimoId) {
+        ConfigSistema config = configSistemaService.obterConfiguracoes();
         Emprestimo emprestimo = buscarPorId(emprestimoId);
 
         if (emprestimo.getStatus() == StatusEmprestimo.DEVOLVIDO) {
@@ -152,16 +171,23 @@ public class EmprestimoService {
         emprestimo.setDataDevolucao(dataDevolucao);
 
         if (dataDevolucao.isAfter(emprestimo.getDataPrevisaoDevolucao())) {
-            long diasAtraso = ChronoUnit.DAYS.between(emprestimo.getDataPrevisaoDevolucao(), dataDevolucao);
-            BigDecimal valorMulta = VALOR_MULTA_POR_DIA.multiply(BigDecimal.valueOf(diasAtraso));
+            long diasAtrasoTotal = ChronoUnit.DAYS.between(emprestimo.getDataPrevisaoDevolucao(), dataDevolucao);
+            int diasTolerancia = config.getDiasToleranciaAtraso() != null ? config.getDiasToleranciaAtraso() : 0;
+            long diasCobrados = Math.max(0, diasAtrasoTotal - diasTolerancia);
 
-            Multa multa = new Multa();
-            multa.setValor(valorMulta);
-            multa.setDataGeracao(dataDevolucao);
-            multa.setStatus(StatusMulta.PENDENTE);
-            multa.setEmprestimo(emprestimo);
+            BigDecimal valorDiario = config.getValorMultaPorDia() != null ? config.getValorMultaPorDia() : new BigDecimal("2.00");
+            BigDecimal valorMulta = valorDiario.multiply(BigDecimal.valueOf(diasCobrados));
 
-            emprestimo.setMulta(multa);
+            if (valorMulta.compareTo(BigDecimal.ZERO) > 0) {
+                Multa multa = new Multa();
+                multa.setValor(valorMulta);
+                multa.setDataGeracao(dataDevolucao);
+                multa.setStatus(StatusMulta.PENDENTE);
+                multa.setEmprestimo(emprestimo);
+
+                emprestimo.setMulta(multa);
+            }
+
             emprestimo.setStatus(StatusEmprestimo.ATRASADO);
         } else {
             emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações do Sistema - Sistema de Biblioteca</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom Sidebar CSS -->
+  <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+  <style>
+    .config-card {
+        border-radius: 16px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .config-card:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+    .section-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .form-label-custom {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.35rem;
+    }
+    .form-hint {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 0.3rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app-wrapper">
+  <!-- Sidebar Fragment -->
+  <div th:replace="~{fragments/sidebar :: sidebar('configuracoes')}"></div>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container-fluid p-0">
+
+      <!-- Cabeçalho da Página -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h2 class="page-title mb-0">Configurações do Sistema</h2>
+          </div>
+          <p class="page-subtitle">Ajuste regras operacionais, prazos, multas e parâmetros institucionais</p>
+        </div>
+
+        <form th:action="@{/configuracoes/restaurar}" method="post" id="formRestaurarPadroes">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold shadow-sm btn-sm"
+                  onclick="confirmarRestauracao(event)">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Restaurar Padrões
+          </button>
+        </form>
+      </div>
+
+      <!-- Alertas de Feedback -->
+      <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center" role="alert">
+        <i class="bi bi-check-circle-fill fs-5 me-2 text-success"></i>
+        <div class="fw-semibold" th:text="${sucesso}">Configurações salvas com sucesso!</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+
+      <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+        <div class="fw-semibold" th:text="${erro}">Erro ao salvar configurações.</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+
+      <!-- Formulário de Configurações -->
+      <form th:action="@{/configuracoes}" th:object="${config}" method="post" id="formConfiguracoes">
+
+        <div class="row g-4">
+
+          <!-- 1. Regras de Circulação e Prazos -->
+          <div class="col-lg-6">
+            <div class="card config-card h-100 shadow-sm">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-2 border-bottom">
+                  <div class="section-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-calendar-range"></i>
+                  </div>
+                  <div>
+                    <h5 class="fw-bold mb-0 text-dark">Circulação & Prazos</h5>
+                    <p class="text-muted small mb-0">Controle de datas limites e cotas por aluno</p>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <label for="diasPrazoEmprestimo" class="form-label-custom">Prazo de Empréstimo (Dias)</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-clock"></i></span>
+                      <input type="number" id="diasPrazoEmprestimo" th:field="*{diasPrazoEmprestimo}"
+                             class="form-control rounded-end-pill" min="1" max="365" required>
+                    </div>
+                    <div class="form-hint">Duração padrão para novas retiradas.</div>
+                  </div>
+
+                  <div class="col-sm-6">
+                    <label for="diasPrazoRenovacao" class="form-label-custom">Prazo de Renovação (Dias)</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-arrow-repeat"></i></span>
+                      <input type="number" id="diasPrazoRenovacao" th:field="*{diasPrazoRenovacao}"
+                             class="form-control rounded-end-pill" min="1" max="365" required>
+                    </div>
+                    <div class="form-hint">Dias adicionais ao renovar um livro.</div>
+                  </div>
+
+                  <div class="col-sm-6">
+                    <label for="limiteLivrosSimultaneos" class="form-label-custom">Limite de Livros por Aluno</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-book"></i></span>
+                      <input type="number" id="limiteLivrosSimultaneos" th:field="*{limiteLivrosSimultaneos}"
+                             class="form-control rounded-end-pill" min="1" max="50" required>
+                    </div>
+                    <div class="form-hint">Cota máxima de livros simultâneos.</div>
+                  </div>
+
+                  <div class="col-sm-6">
+                    <label for="maximoRenovacoesPermitidas" class="form-label-custom">Máximo de Renovações</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-arrow-clockwise"></i></span>
+                      <input type="number" id="maximoRenovacoesPermitidas" th:field="*{maximoRenovacoesPermitidas}"
+                             class="form-control rounded-end-pill" min="0" max="20" required>
+                    </div>
+                    <div class="form-hint">Vezes que um mesmo livro pode ser renovado.</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Cobrança e Política de Multas -->
+          <div class="col-lg-6">
+            <div class="card config-card h-100 shadow-sm">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-2 border-bottom">
+                  <div class="section-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-cash-coin"></i>
+                  </div>
+                  <div>
+                    <h5 class="fw-bold mb-0 text-dark">Política de Multas</h5>
+                    <p class="text-muted small mb-0">Valores, tolerância e regras de inadimplência</p>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <label for="valorMultaPorDia" class="form-label-custom">Valor da Multa / Dia (R$)</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted">R$</span>
+                      <input type="number" step="0.01" min="0" max="999.99" id="valorMultaPorDia"
+                             th:field="*{valorMultaPorDia}" class="form-control rounded-end-pill" required>
+                    </div>
+                    <div class="form-hint">Cobrança aplicada para cada dia de atraso.</div>
+                  </div>
+
+                  <div class="col-sm-6">
+                    <label for="diasToleranciaAtraso" class="form-label-custom">Dias de Carência / Tolerância</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shield-check"></i></span>
+                      <input type="number" id="diasToleranciaAtraso" th:field="*{diasToleranciaAtraso}"
+                             class="form-control rounded-end-pill" min="0" max="30" required>
+                    </div>
+                    <div class="form-hint">Dias isentos antes de iniciar a cobrança.</div>
+                  </div>
+
+                  <div class="col-12 mt-4">
+                    <div class="form-check form-switch p-0 d-flex align-items-center justify-content-between rounded-3 p-3 border bg-light">
+                      <div>
+                        <label class="form-check-label fw-semibold text-dark mb-0" for="bloquearEmprestimoComMultaPendente">
+                          Bloquear Novos Empréstimos por Multas Pendentes
+                        </label>
+                        <div class="form-hint mb-0">Impede que alunos com débitos em aberto retirem novos livros.</div>
+                      </div>
+                      <input class="form-check-input m-0 fs-5" type="checkbox" role="switch"
+                             id="bloquearEmprestimoComMultaPendente" th:field="*{bloquearEmprestimoComMultaPendente}">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Identidade Institucional e Relatórios -->
+          <div class="col-12">
+            <div class="card config-card shadow-sm">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-2 border-bottom">
+                  <div class="section-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-building"></i>
+                  </div>
+                  <div>
+                    <h5 class="fw-bold mb-0 text-dark">Identidade Institucional & Relatórios</h5>
+                    <p class="text-muted small mb-0">Personalização de cabeçalhos e rodapés oficiais dos relatórios em PDF</p>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="nomeInstituicao" class="form-label-custom">Nome da Biblioteca / Instituição</label>
+                    <input type="text" id="nomeInstituicao" th:field="*{nomeInstituicao}"
+                           class="form-control rounded-pill" maxlength="150" required
+                           placeholder="Ex: Biblioteca Central Acadêmica - CETAM">
+                    <div class="form-hint">Aparecerá nos cabeçalhos e títulos oficiais dos documentos exportados.</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="textoRodapeRelatorio" class="form-label-custom">Texto de Rodapé dos Relatórios PDF</label>
+                    <input type="text" id="textoRodapeRelatorio" th:field="*{textoRodapeRelatorio}"
+                           class="form-control rounded-pill" maxlength="255" required
+                           placeholder="Ex: Sistema de Controle de Biblioteca - Relatório Oficial">
+                    <div class="form-hint">Exibido na margem inferior de todas as páginas dos PDFs gerados.</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões de Ação -->
+          <div class="col-12 d-flex justify-content-end gap-2 pt-2">
+            <a th:href="@{/}" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary">
+              Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+              <i class="bi bi-check2 me-1"></i> Salvar Configurações
+            </button>
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </main>
+</div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  function confirmarRestauracao(event) {
+      if (window.confirmAction) {
+          window.confirmAction(
+              event,
+              { form: document.getElementById('formRestaurarPadroes') },
+              'Deseja restaurar todas as configurações operacionais para os padrões de fábrica?',
+              'warning',
+              'Restaurar Padrões',
+              'Sim, Restaurar'
+          );
+      } else if (confirm('Deseja restaurar todas as configurações para o padrão?')) {
+          document.getElementById('formRestaurarPadroes').submit();
+      }
+  }
+</script>
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 package cetam.projeto01grupo03.service;
 
+import cetam.projeto01grupo03.model.ConfigSistema;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -13,13 +14,21 @@ import java.util.Map;
 public class PdfReportService {
 
     private final TemplateEngine templateEngine;
+    private final ConfigSistemaService configSistemaService;
 
-    public PdfReportService(TemplateEngine templateEngine) {
+    public PdfReportService(TemplateEngine templateEngine, ConfigSistemaService configSistemaService) {
         this.templateEngine = templateEngine;
+        this.configSistemaService = configSistemaService;
     }
 
     public byte[] gerarPdf(String templatePath, Map<String, Object> dados) {
         Context context = new Context();
+
+        ConfigSistema config = configSistemaService.obterConfiguracoes();
+        context.setVariable("nomeInstituicao", config.getNomeInstituicao());
+        context.setVariable("textoRodapeRelatorio", config.getTextoRodapeRelatorio());
+        context.setVariable("configSistema", config);
+
         if (dados != null && !dados.isEmpty()) {
             dados.forEach(context::setVariable);
         }
