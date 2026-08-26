@@ -33,6 +33,9 @@ public class Emprestimo {
     @Column(length = 20)
     private StatusEmprestimo status;
 
+    @Column(name = "quantidade_renovacoes", nullable = false)
+    private Integer quantidadeRenovacoes = 0;
+
     @OneToOne(mappedBy = "emprestimo", cascade = CascadeType.ALL)
     private Multa multa;
 
@@ -104,6 +107,14 @@ public class Emprestimo {
 
     public void setStatus(StatusEmprestimo status) {
         this.status = status;
+    }
+
+    public Integer getQuantidadeRenovacoes() {
+        return quantidadeRenovacoes != null ? quantidadeRenovacoes : 0;
+    }
+
+    public void setQuantidadeRenovacoes(Integer quantidadeRenovacoes) {
+        this.quantidadeRenovacoes = quantidadeRenovacoes;
     }
 
     public Multa getMulta() {
