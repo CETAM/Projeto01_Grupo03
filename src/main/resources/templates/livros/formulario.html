@@ -102,18 +102,28 @@
 
                 <div class="row g-2 mb-3">
                     <div class="col-md-6">
-                        <label for="autor" class="form-label">
-                            Autor <span class="text-danger">*</span>
-                        </label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="autor" class="form-label mb-0">
+                                Autor <span class="text-danger">*</span>
+                            </label>
+                            <button type="button" class="btn btn-sm btn-link text-primary text-decoration-none p-0 fw-semibold" style="font-size: 0.78rem;" onclick="abrirModalNovoAutor()">
+                                <i class="bi bi-plus-circle me-1"></i> Novo Autor
+                            </button>
+                        </div>
                         <select id="autor" th:field="*{autor}" class="form-select form-select-minimal" required>
                             <option value="">Selecione um autor...</option>
                             <option th:each="a : ${autores}" th:value="${a.id}" th:text="${a.nome}">Machado de Assis</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label for="editora" class="form-label">
-                            Editora <span class="text-danger">*</span>
-                        </label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="editora" class="form-label mb-0">
+                                Editora <span class="text-danger">*</span>
+                            </label>
+                            <button type="button" class="btn btn-sm btn-link text-primary text-decoration-none p-0 fw-semibold" style="font-size: 0.78rem;" onclick="abrirModalNovaEditora()">
+                                <i class="bi bi-plus-circle me-1"></i> Nova Editora
+                            </button>
+                        </div>
                         <select id="editora" th:field="*{editora}" class="form-select form-select-minimal" required>
                             <option value="">Selecione uma editora...</option>
                             <option th:each="e : ${editoras}" th:value="${e.id}" th:text="${e.nome}">Companhia das Letras</option>
@@ -190,6 +200,62 @@
     </div>
 </div>
 
+<!-- MINI-MODAL DE CADASTRO RÁPIDO DE AUTOR -->
+<div class="modal fade" id="modalNovoAutor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 380px;">
+        <div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-person text-primary me-1"></i> Novo Autor
+                </h6>
+                <button type="button" class="btn-close-custom" onclick="fecharModalNovoAutor()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="formNovoAutor" onsubmit="salvarNovoAutor(event)">
+                <div class="mb-3">
+                    <label for="autorNome" class="form-label fw-semibold small text-secondary">Nome do Autor <span class="text-danger">*</span></label>
+                    <input type="text" id="autorNome" class="form-control form-control-minimal" placeholder="Ex: Clarice Lispector, Machado de Assis" required maxlength="200" autocomplete="off">
+                </div>
+                <div class="d-flex justify-content-end gap-2 pt-2">
+                    <button type="button" class="btn btn-light rounded-pill px-3 py-1 btn-sm fw-semibold text-muted" onclick="fecharModalNovoAutor()">Cancelar</button>
+                    <button type="submit" id="btnSalvarNovoAutor" class="btn btn-primary rounded-pill px-3 py-1 btn-sm fw-semibold shadow-sm">
+                        <i class="bi bi-check2 me-1"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MINI-MODAL DE CADASTRO RÁPIDO DE EDITORA -->
+<div class="modal fade" id="modalNovaEditora" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 380px;">
+        <div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-building text-primary me-1"></i> Nova Editora
+                </h6>
+                <button type="button" class="btn-close-custom" onclick="fecharModalNovaEditora()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="formNovaEditora" onsubmit="salvarNovaEditora(event)">
+                <div class="mb-3">
+                    <label for="editoraNome" class="form-label fw-semibold small text-secondary">Nome da Editora <span class="text-danger">*</span></label>
+                    <input type="text" id="editoraNome" class="form-control form-control-minimal" placeholder="Ex: Companhia das Letras, Rocco" required maxlength="200" autocomplete="off">
+                </div>
+                <div class="d-flex justify-content-end gap-2 pt-2">
+                    <button type="button" class="btn btn-light rounded-pill px-3 py-1 btn-sm fw-semibold text-muted" onclick="fecharModalNovaEditora()">Cancelar</button>
+                    <button type="submit" id="btnSalvarNovaEditora" class="btn btn-primary rounded-pill px-3 py-1 btn-sm fw-semibold shadow-sm">
+                        <i class="bi bi-check2 me-1"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -244,6 +310,126 @@
             fecharModalNovaCategoria();
             if (window.showToast) {
                 window.showToast('success', `Categoria "${novaCategoria.nome}" criada com sucesso!`);
+            }
+        } catch (error) {
+            if (window.showToast) {
+                window.showToast('danger', error.message);
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // --- NOVO AUTOR ---
+    function abrirModalNovoAutor() {
+        document.getElementById('formNovoAutor').reset();
+        const modalEl = document.getElementById('modalNovoAutor');
+        const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        bsModal.show();
+    }
+
+    function fecharModalNovoAutor() {
+        const modalEl = document.getElementById('modalNovoAutor');
+        const bsModal = bootstrap.Modal.getInstance(modalEl);
+        if (bsModal) bsModal.hide();
+    }
+
+    async function salvarNovoAutor(event) {
+        event.preventDefault();
+        const nome = document.getElementById('autorNome').value.trim();
+
+        if (!nome) {
+            if (window.showToast) window.showToast('danger', 'O nome do autor é obrigatório.');
+            return;
+        }
+
+        const btn = document.getElementById('btnSalvarNovoAutor');
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/autores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.mensagem || 'Erro ao criar autor.');
+            }
+
+            const novoAutor = await response.json();
+
+            const selectAutor = document.getElementById('autor');
+            const opt = document.createElement('option');
+            opt.value = novoAutor.id;
+            opt.textContent = novoAutor.nome;
+            opt.selected = true;
+            selectAutor.appendChild(opt);
+
+            fecharModalNovoAutor();
+            if (window.showToast) {
+                window.showToast('success', `Autor "${novoAutor.nome}" criado com sucesso!`);
+            }
+        } catch (error) {
+            if (window.showToast) {
+                window.showToast('danger', error.message);
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // --- NOVA EDITORA ---
+    function abrirModalNovaEditora() {
+        document.getElementById('formNovaEditora').reset();
+        const modalEl = document.getElementById('modalNovaEditora');
+        const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        bsModal.show();
+    }
+
+    function fecharModalNovaEditora() {
+        const modalEl = document.getElementById('modalNovaEditora');
+        const bsModal = bootstrap.Modal.getInstance(modalEl);
+        if (bsModal) bsModal.hide();
+    }
+
+    async function salvarNovaEditora(event) {
+        event.preventDefault();
+        const nome = document.getElementById('editoraNome').value.trim();
+
+        if (!nome) {
+            if (window.showToast) window.showToast('danger', 'O nome da editora é obrigatório.');
+            return;
+        }
+
+        const btn = document.getElementById('btnSalvarNovaEditora');
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/editoras', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.mensagem || 'Erro ao criar editora.');
+            }
+
+            const novaEditora = await response.json();
+
+            const selectEditora = document.getElementById('editora');
+            const opt = document.createElement('option');
+            opt.value = novaEditora.id;
+            opt.textContent = novaEditora.nome;
+            opt.selected = true;
+            selectEditora.appendChild(opt);
+
+            fecharModalNovaEditora();
+            if (window.showToast) {
+                window.showToast('success', `Editora "${novaEditora.nome}" criada com sucesso!`);
             }
         } catch (error) {
             if (window.showToast) {
