@@ -1,7 +1,8 @@
 -- BANCO DE DADOS BIBLIOTECA_DB
 -- Projeto01_Grupo03 - CETAM
 
-CREATE DATABASE IF NOT EXISTS grupo03_db;
+DROP DATABASE IF EXISTS grupo03_db;
+CREATE DATABASE grupo03_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE grupo03_db;
 
 -- 1. Tabela: autores

@@ -172,13 +172,18 @@ public class EmprestimoService {
             BigDecimal valorMulta = valorDiario.multiply(BigDecimal.valueOf(diasCobrados));
 
             if (valorMulta.compareTo(BigDecimal.ZERO) > 0) {
-                Multa multa = new Multa();
-                multa.setValor(valorMulta);
-                multa.setDataGeracao(dataDevolucao);
-                multa.setStatus(StatusMulta.PENDENTE);
-                multa.setEmprestimo(emprestimo);
-
-                emprestimo.setMulta(multa);
+                Multa multa = emprestimo.getMulta();
+                if (multa == null) {
+                    multa = new Multa();
+                    multa.setDataGeracao(dataDevolucao);
+                    multa.setStatus(StatusMulta.PENDENTE);
+                    multa.setEmprestimo(emprestimo);
+                    emprestimo.setMulta(multa);
+                }
+                if (multa.getStatus() == StatusMulta.PENDENTE) {
+                    multa.setValor(valorMulta);
+                    multa.setDataGeracao(dataDevolucao);
+                }
             }
         }
         emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
