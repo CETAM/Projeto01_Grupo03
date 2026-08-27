@@ -27,7 +27,23 @@ public class AutorService {
                 .orElseThrow(() -> new IllegalArgumentException("Autor não encontrado com o ID: " + id));
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public Autor salvar(Autor autor) {
+        if (autor.getNome() == null || autor.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome do autor é obrigatório.");
+        }
+        autor.setNome(autor.getNome().trim());
+
+        if (autor.getId() == null) {
+            if (autorRepository.existsByNomeIgnoreCase(autor.getNome())) {
+                throw new IllegalArgumentException("Já existe um autor cadastrado com o nome '" + autor.getNome() + "'.");
+            }
+        } else {
+            if (autorRepository.existsByNomeIgnoreCaseAndIdNot(autor.getNome(), autor.getId())) {
+                throw new IllegalArgumentException("Já existe outro autor cadastrado com o nome '" + autor.getNome() + "'.");
+            }
+        }
+
         return autorRepository.save(autor);
     }
 

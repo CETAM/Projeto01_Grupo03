@@ -145,23 +145,24 @@
               <tr th:each="emp : ${atrasados}">
                 <td class="fw-semibold text-danger" th:text="${'#' + emp.id}">#1</td>
                 <td>
-                  <div class="fw-bold text-dark" th:text="${emp.aluno.nome}">Nome do Aluno</div>
-                  <small class="text-muted" th:text="${'Matrícula: ' + emp.aluno.matricula}">Matrícula: 123</small>
-                  <small class="text-muted d-block" th:if="${emp.aluno.telefone != null and !emp.aluno.telefone.isEmpty()}" th:text="${'Tel: ' + emp.aluno.telefone}">Tel: (92) 99999-9999</small>
+                  <div class="fw-bold text-dark" th:text="${emp.aluno != null ? emp.aluno.nome : '-'}">Nome do Aluno</div>
+                  <small class="text-muted" th:text="${emp.aluno != null ? 'Matrícula: ' + emp.aluno.matricula : '-'}">Matrícula: 123</small>
+                  <small class="text-muted d-block" th:if="${emp.aluno != null and emp.aluno.email != null and !emp.aluno.email.isEmpty()}" th:text="${emp.aluno.email}">aluno@escola.edu.br</small>
                 </td>
                 <td>
-                  <div class="fw-semibold text-dark" th:text="${emp.livro.titulo}">Título do Livro</div>
-                  <small class="text-muted" th:text="${emp.livro.autor != null ? emp.livro.autor.nome : '-'}">Autor</small>
+                  <div class="fw-semibold text-dark" th:text="${emp.livro != null ? emp.livro.titulo : '-'}">Título do Livro</div>
+                  <small class="text-muted" th:text="${emp.livro != null and emp.livro.autor != null ? emp.livro.autor.nome : '-'}">Autor</small>
                 </td>
-                <td th:text="${#temporals.format(emp.dataEmprestimo, 'dd/MM/yyyy')}">01/01/2026</td>
+                <td th:text="${emp.dataEmprestimo != null ? #temporals.format(emp.dataEmprestimo, 'dd/MM/yyyy') : '-'}">01/01/2026</td>
                 <td>
-                  <span class="text-danger fw-semibold" th:text="${#temporals.format(emp.dataPrevisaoDevolucao, 'dd/MM/yyyy')}">15/01/2026</span>
+                  <span class="text-danger fw-semibold" th:text="${emp.dataPrevisaoDevolucao != null ? #temporals.format(emp.dataPrevisaoDevolucao, 'dd/MM/yyyy') : '-'}">15/01/2026</span>
                 </td>
                 <td class="text-center">
-                  <span class="badge-delay">
+                  <span class="badge-delay" th:if="${emp.dataPrevisaoDevolucao != null}">
                     <i class="bi bi-clock-history"></i>
                     <span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(emp.dataPrevisaoDevolucao, T(java.time.LocalDate).now()) + ' dia(s)'}">5 dia(s)</span>
                   </span>
+                  <span th:if="${emp.dataPrevisaoDevolucao == null}">-</span>
                 </td>
                 <td class="text-end btn-no-print">
                   <a th:href="@{/emprestimos}" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold text-secondary" title="Ver no módulo de empréstimos">

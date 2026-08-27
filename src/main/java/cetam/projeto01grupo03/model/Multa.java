@@ -19,6 +19,9 @@ public class Multa {
     @Column(name = "data_geracao")
     private LocalDate dataGeracao;
 
+    @Column(name = "data_pagamento")
+    private LocalDate dataPagamento;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private StatusMulta status;
@@ -29,10 +32,11 @@ public class Multa {
 
     public Multa() {}
 
-    public Multa(Long id, BigDecimal valor, LocalDate dataGeracao, StatusMulta status, Emprestimo emprestimo) {
+    public Multa(Long id, BigDecimal valor, LocalDate dataGeracao, LocalDate dataPagamento, StatusMulta status, Emprestimo emprestimo) {
         this.id = id;
         this.valor = valor;
         this.dataGeracao = dataGeracao;
+        this.dataPagamento = dataPagamento;
         this.status = status;
         this.emprestimo = emprestimo;
     }
@@ -61,6 +65,14 @@ public class Multa {
         this.dataGeracao = dataGeracao;
     }
 
+    public LocalDate getDataPagamento() {
+        return dataPagamento;
+    }
+
+    public void setDataPagamento(LocalDate dataPagamento) {
+        this.dataPagamento = dataPagamento;
+    }
+
     public StatusMulta getStatus() {
         return status;
     }
@@ -75,6 +87,17 @@ public class Multa {
 
     public void setEmprestimo(Emprestimo emprestimo) {
         this.emprestimo = emprestimo;
+    }
+
+    public long getDiasAtraso() {
+        if (emprestimo == null || emprestimo.getDataPrevisaoDevolucao() == null) {
+            return 0;
+        }
+        LocalDate dataFim = emprestimo.getDataDevolucao() != null ? emprestimo.getDataDevolucao() : LocalDate.now();
+        if (dataFim.isAfter(emprestimo.getDataPrevisaoDevolucao())) {
+            return java.time.temporal.ChronoUnit.DAYS.between(emprestimo.getDataPrevisaoDevolucao(), dataFim);
+        }
+        return 0;
     }
 
     @Override

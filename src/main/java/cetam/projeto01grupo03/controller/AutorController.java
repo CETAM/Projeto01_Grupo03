@@ -67,23 +67,26 @@ public class AutorController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        if (autor.getNome() == null || autor.getNome().trim().isEmpty()) {
-            model.addAttribute(
-                    "mensagemErro",
-                    "O nome do autor é obrigatório."
+        try {
+            autorService.salvar(autor);
+            redirectAttributes.addFlashAttribute(
+                    "mensagemSucesso",
+                    "Autor salvo com sucesso!"
             );
-
+            return "redirect:/autores";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("autor", autor);
+            return "autores/formulario";
+        } catch (DataIntegrityViolationException e) {
+            model.addAttribute("mensagemErro", "Erro de integridade: Já existe um autor cadastrado com este nome.");
+            model.addAttribute("autor", autor);
+            return "autores/formulario";
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", "Erro ao salvar autor: " + e.getMessage());
+            model.addAttribute("autor", autor);
             return "autores/formulario";
         }
-
-        autorService.salvar(autor);
-
-        redirectAttributes.addFlashAttribute(
-                "mensagemSucesso",
-                "Autor salvo com sucesso!"
-        );
-
-        return "redirect:/autores";
     }
 
     // Exclui um autor

@@ -42,4 +42,13 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
             "GROUP BY e.livro.id, e.livro.titulo, e.livro.autor.nome, e.livro.categoria.nome " +
             "ORDER BY COUNT(e) DESC")
     List<LivroMaisEmprestadoDTO> findLivrosMaisEmprestados(Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Emprestimo e SET e.status = :statusAtrasado WHERE e.status = :statusAtivo AND e.dataPrevisaoDevolucao < :hoje AND e.dataDevolucao IS NULL")
+    void atualizarStatusEmprestimosVencidos(@org.springframework.data.repository.query.Param("statusAtrasado") StatusEmprestimo statusAtrasado,
+                                           @org.springframework.data.repository.query.Param("statusAtivo") StatusEmprestimo statusAtivo,
+                                           @org.springframework.data.repository.query.Param("hoje") LocalDate hoje);
+
+    @Query("SELECT e FROM Emprestimo e WHERE e.dataDevolucao IS NULL AND (e.status = 'ATRASADO' OR (e.status = 'ATIVO' AND e.dataPrevisaoDevolucao < :hoje)) ORDER BY e.dataPrevisaoDevolucao ASC")
+    List<Emprestimo> findEmprestimosEmAtrasoEmAberto(@org.springframework.data.repository.query.Param("hoje") LocalDate hoje);
 }

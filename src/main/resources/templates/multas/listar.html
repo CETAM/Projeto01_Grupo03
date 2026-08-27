@@ -169,30 +169,30 @@
 
                     <td class="text-center">
                       <span class="fw-bold"
-                            th:classappend="${m.status.name() == 'PENDENTE' ? 'text-danger' : 'text-secondary'}"
+                            th:classappend="${m.status != null and m.status.name() == 'PENDENTE' ? 'text-danger' : 'text-secondary'}"
                             th:text="${m.diasAtraso}">
-                        12
+                        0
                       </span>
                     </td>
 
                     <td>
                       <span class="fw-bold text-dark"
                             th:text="${'R$ ' + (m.valor != null ? #numbers.formatDecimal(m.valor, 1, 'POINT', 2, 'COMMA') : '0,00')}">
-                        R$ 24,00
+                        R$ 0,00
                       </span>
                     </td>
 
                     <td>
-                      <span th:if="${m.status.name() == 'PENDENTE'}" class="badge-soft-danger">
+                      <span th:if="${m.status != null and m.status.name() == 'PENDENTE'}" class="badge-soft-danger">
                         Pendente
                       </span>
-                      <span th:if="${m.status.name() == 'PAGO'}" class="badge-soft-success">
+                      <span th:if="${m.status != null and m.status.name() == 'PAGO'}" class="badge-soft-success">
                         Pago
                       </span>
                     </td>
 
                     <td class="text-end pe-2">
-                      <a th:if="${m.status.name() == 'PENDENTE'}"
+                      <a th:if="${m.status != null and m.status.name() == 'PENDENTE'}"
                          th:href="@{/multas/pagar/{id}(id=${m.id})}"
                          class="btn btn-primary rounded-pill px-3 py-1 fw-semibold shadow-sm text-nowrap"
                          style="font-size: 0.85rem;"
@@ -200,7 +200,7 @@
                         <i class="bi bi-check2 me-1"></i> Receber
                       </a>
 
-                      <div th:if="${m.status.name() == 'PAGO'}" class="text-secondary small d-inline-flex align-items-center gap-1">
+                      <div th:if="${m.status != null and m.status.name() == 'PAGO'}" class="text-secondary small d-inline-flex align-items-center gap-1">
                         <i class="bi bi-clock-history text-muted"></i>
                         <span th:text="${m.dataPagamento != null ? #temporals.format(m.dataPagamento, 'dd/MM/yyyy') : (m.dataGeracao != null ? #temporals.format(m.dataGeracao, 'dd/MM/yyyy') : 'Pago')}">
                           12/10/2023

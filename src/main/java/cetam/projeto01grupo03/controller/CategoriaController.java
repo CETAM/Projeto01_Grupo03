@@ -47,14 +47,23 @@ public class CategoriaController {
     public String salvar(@ModelAttribute("categoria") Categoria categoria,
                          Model model,
                          RedirectAttributes redirectAttributes) {
-        if (categoria.getNome() == null || categoria.getNome().trim().isEmpty()) {
-            model.addAttribute("mensagemErro", "O nome da categoria é obrigatório.");
+        try {
+            categoriaService.salvar(categoria);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Categoria salva com sucesso!");
+            return "redirect:/categorias";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("categoria", categoria);
+            return "categorias/formulario";
+        } catch (DataIntegrityViolationException e) {
+            model.addAttribute("mensagemErro", "Erro de integridade: Já existe uma categoria cadastrada com este nome.");
+            model.addAttribute("categoria", categoria);
+            return "categorias/formulario";
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", "Erro ao salvar categoria: " + e.getMessage());
+            model.addAttribute("categoria", categoria);
             return "categorias/formulario";
         }
-
-        categoriaService.salvar(categoria);
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Categoria salva com sucesso!");
-        return "redirect:/categorias";
     }
 
     @GetMapping("/excluir/{id}")

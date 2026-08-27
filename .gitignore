@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local Files ###
+notebooklm_docs/
+generate_docs.py

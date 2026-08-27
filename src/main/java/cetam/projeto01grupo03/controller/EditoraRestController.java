@@ -44,6 +44,9 @@ public class EditoraRestController {
         try {
             Editora salva = editoraService.salvar(editora);
             return ResponseEntity.status(HttpStatus.CREATED).body(salva);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensagem", "Erro ao salvar editora: " + e.getMessage()));
@@ -61,6 +64,9 @@ public class EditoraRestController {
             editora.setNome(editoraAtualizada.getNome());
             Editora salva = editoraService.salvar(editora);
             return ResponseEntity.ok(salva);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("mensagem", "Erro ao atualizar editora: " + e.getMessage()));

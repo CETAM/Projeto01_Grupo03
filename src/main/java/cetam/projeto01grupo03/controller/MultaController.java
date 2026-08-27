@@ -31,6 +31,7 @@ public class MultaController {
         }
         model.addAttribute("termo", termo);
         model.addAttribute("totalPendente", multaService.calcularTotalPendente());
+        model.addAttribute("totalRecebido", multaService.calcularTotalRecebido());
         model.addAttribute("totalAlunosEmAtraso", multaService.contarAlunosEmAtraso());
         return "multas/listar";
     }

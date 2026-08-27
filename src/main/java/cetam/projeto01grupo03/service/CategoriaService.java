@@ -33,6 +33,27 @@ public class CategoriaService {
 
     @Transactional
     public Categoria salvar(Categoria categoria) {
+        if (categoria.getNome() == null || categoria.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome da categoria é obrigatório.");
+        }
+        categoria.setNome(categoria.getNome().trim());
+        if (categoria.getDescricao() != null) {
+            categoria.setDescricao(categoria.getDescricao().trim());
+            if (categoria.getDescricao().isEmpty()) {
+                categoria.setDescricao(null);
+            }
+        }
+
+        if (categoria.getId() == null) {
+            if (categoriaRepository.existsByNomeIgnoreCase(categoria.getNome())) {
+                throw new IllegalArgumentException("Já existe uma categoria cadastrada com o nome '" + categoria.getNome() + "'.");
+            }
+        } else {
+            if (categoriaRepository.existsByNomeIgnoreCaseAndIdNot(categoria.getNome(), categoria.getId())) {
+                throw new IllegalArgumentException("Já existe outra categoria cadastrada com o nome '" + categoria.getNome() + "'.");
+            }
+        }
+
         return categoriaRepository.save(categoria);
     }
 

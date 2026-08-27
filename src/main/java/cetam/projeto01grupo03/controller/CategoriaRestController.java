@@ -44,6 +44,9 @@ public class CategoriaRestController {
         try {
             Categoria salva = categoriaService.salvar(categoria);
             return ResponseEntity.status(HttpStatus.CREATED).body(salva);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensagem", "Erro ao salvar categoria: " + e.getMessage()));
@@ -62,6 +65,9 @@ public class CategoriaRestController {
             categoria.setDescricao(categoriaAtualizada.getDescricao());
             Categoria salva = categoriaService.salvar(categoria);
             return ResponseEntity.ok(salva);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("mensagem", "Erro ao atualizar categoria: " + e.getMessage()));
