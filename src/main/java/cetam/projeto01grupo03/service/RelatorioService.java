@@ -46,8 +46,8 @@ public class RelatorioService {
 
     @Transactional
     public DashboardDTO obterDadosDashboard() {
-
-        emprestimoService.listarTodos(null);
+        LocalDate hoje = LocalDate.now();
+        emprestimoRepository.atualizarStatusEmprestimosVencidos(StatusEmprestimo.ATRASADO, StatusEmprestimo.ATIVO, hoje);
 
         DashboardDTO dto = new DashboardDTO();
 
@@ -55,9 +55,10 @@ public class RelatorioService {
         long totalExemplares = livroRepository.sumTotalExemplares();
         long totalAlunos = alunoRepository.count();
         long totalAtivos = emprestimoRepository.countByStatus(StatusEmprestimo.ATIVO);
-        long totalAtrasados = emprestimoRepository.countByStatus(StatusEmprestimo.ATRASADO);
+        List<Emprestimo> todosAtrasados = emprestimoRepository.findEmprestimosEmAtrasoEmAberto(hoje);
+        long totalAtrasados = todosAtrasados.size();
         long totalDevolvidos = emprestimoRepository.countByStatus(StatusEmprestimo.DEVOLVIDO);
-        long totalDevolucoesHoje =  emprestimoRepository.countByDataPrevisaoDevolucaoAndStatusNot(LocalDate.now(), StatusEmprestimo.DEVOLVIDO);
+        long totalDevolucoesHoje =  emprestimoRepository.countByDataPrevisaoDevolucaoAndStatusNot(hoje, StatusEmprestimo.DEVOLVIDO);
 
         dto.setTotalLivros(totalLivros);
         dto.setTotalExemplares(totalExemplares);
@@ -80,7 +81,6 @@ public class RelatorioService {
         }
 
         dto.setUltimosEmprestimos(emprestimoRepository.findAllByOrderByIdDesc(PageRequest.of(0, 5)));
-        List<Emprestimo> todosAtrasados = emprestimoRepository.findByStatus(StatusEmprestimo.ATRASADO);
         dto.setEmprestimosCriticosAtrasados(todosAtrasados.stream().limit(5).toList());
         dto.setTopLivros(obterLivrosMaisEmprestados(5));
 
@@ -89,7 +89,6 @@ public class RelatorioService {
         List<Long> devolucoesPorDia = new ArrayList<>();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM");
 
-        LocalDate hoje = LocalDate.now();
         for (int i = 6; i >= 0; i--) {
             LocalDate dia = hoje.minusDays(i);
             diasLabels.add(dia.format(dtf));
@@ -118,7 +117,7 @@ public class RelatorioService {
         long totalLivros = livroRepository.count();
         long totalAlunos = alunoRepository.count();
         long totalAtivos = emprestimoRepository.countByStatus(StatusEmprestimo.ATIVO);
-        long totalAtrasados = emprestimoRepository.countByStatus(StatusEmprestimo.ATRASADO);
+        long totalAtrasados = emprestimoRepository.findEmprestimosEmAtrasoEmAberto(LocalDate.now()).size();
         long totalDevolvidos = emprestimoRepository.countByStatus(StatusEmprestimo.DEVOLVIDO);
         long totalMultasPendentes = multaRepository.countByStatus(StatusMulta.PENDENTE);
 
@@ -150,9 +149,9 @@ public class RelatorioService {
 
     @Transactional
     public List<Emprestimo> obterEmprestimosAtrasados() {
-        // Atualiza status de eventuais empréstimos que venceram
-        emprestimoService.listarTodos(null);
-        return emprestimoRepository.findByStatus(StatusEmprestimo.ATRASADO);
+        LocalDate hoje = LocalDate.now();
+        emprestimoRepository.atualizarStatusEmprestimosVencidos(StatusEmprestimo.ATRASADO, StatusEmprestimo.ATIVO, hoje);
+        return emprestimoRepository.findEmprestimosEmAtrasoEmAberto(hoje);
     }
 
     @Transactional(readOnly = true)

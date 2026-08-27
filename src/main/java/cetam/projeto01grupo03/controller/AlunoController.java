@@ -1,7 +1,6 @@
 package cetam.projeto01grupo03.controller;
 
 import cetam.projeto01grupo03.model.Aluno;
-import cetam.projeto01grupo03.model.Autor;
 import cetam.projeto01grupo03.service.AlunoService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;

@@ -37,18 +37,11 @@ public class EmprestimoService {
 
     @Transactional
     public List<Emprestimo> listarTodos(StatusEmprestimo status) {
-        List<Emprestimo> lista = emprestimoRepository.findAll();
-        LocalDate hoje = LocalDate.now();
-        for (Emprestimo emp : lista) {
-            if (emp.getStatus() == StatusEmprestimo.ATIVO && emp.getDataPrevisaoDevolucao() != null && hoje.isAfter(emp.getDataPrevisaoDevolucao())) {
-                emp.setStatus(StatusEmprestimo.ATRASADO);
-                emprestimoRepository.save(emp);
-            }
-        }
+        emprestimoRepository.atualizarStatusEmprestimosVencidos(StatusEmprestimo.ATRASADO, StatusEmprestimo.ATIVO, LocalDate.now());
         if (status != null) {
             return emprestimoRepository.findByStatus(status);
         }
-        return lista;
+        return emprestimoRepository.findAll();
     }
 
     public List<Emprestimo> listarPorAluno(Long alunoId) {
@@ -187,11 +180,8 @@ public class EmprestimoService {
 
                 emprestimo.setMulta(multa);
             }
-
-            emprestimo.setStatus(StatusEmprestimo.ATRASADO);
-        } else {
-            emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
         }
+        emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
 
         Livro livro = emprestimo.getLivro();
         if (livro != null) {
