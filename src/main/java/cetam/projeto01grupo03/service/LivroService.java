@@ -38,6 +38,48 @@ public class LivroService {
 
     @Transactional
     public Livro salvar(Livro livro) {
+        if (livro.getTitulo() == null || livro.getTitulo().trim().isEmpty()) {
+            throw new IllegalArgumentException("O título do livro é obrigatório.");
+        }
+        if (livro.getAutor() == null || livro.getAutor().getId() == null) {
+            throw new IllegalArgumentException("O autor do livro é obrigatório.");
+        }
+        if (livro.getEditora() == null || livro.getEditora().getId() == null) {
+            throw new IllegalArgumentException("A editora do livro é obrigatória.");
+        }
+
+        livro.setTitulo(livro.getTitulo().trim());
+        if (livro.getIsbn() != null) {
+            livro.setIsbn(livro.getIsbn().trim());
+            if (livro.getIsbn().isEmpty()) {
+                livro.setIsbn(null);
+            }
+        }
+
+        // Validação de unicidade de ISBN (quando informado)
+        if (livro.getIsbn() != null) {
+            if (livro.getId() == null) {
+                if (livroRepository.existsByIsbn(livro.getIsbn())) {
+                    throw new IllegalArgumentException("Já existe um livro cadastrado com o ISBN '" + livro.getIsbn() + "'.");
+                }
+            } else {
+                if (livroRepository.existsByIsbnAndIdNot(livro.getIsbn(), livro.getId())) {
+                    throw new IllegalArgumentException("Já existe outro livro cadastrado com o ISBN '" + livro.getIsbn() + "'.");
+                }
+            }
+        }
+
+        // Validação de título duplicado para o mesmo autor
+        if (livro.getId() == null) {
+            if (livroRepository.existsByTituloIgnoreCaseAndAutorId(livro.getTitulo(), livro.getAutor().getId())) {
+                throw new IllegalArgumentException("Já existe uma obra cadastrada com o título '" + livro.getTitulo() + "' para este autor.");
+            }
+        } else {
+            if (livroRepository.existsByTituloIgnoreCaseAndAutorIdAndIdNot(livro.getTitulo(), livro.getAutor().getId(), livro.getId())) {
+                throw new IllegalArgumentException("Já existe outra obra cadastrada com o título '" + livro.getTitulo() + "' para este autor.");
+            }
+        }
+
         if (livro.getQuantidadeExemplares() == null || livro.getQuantidadeExemplares() < 0) {
             livro.setQuantidadeExemplares(1);
         }

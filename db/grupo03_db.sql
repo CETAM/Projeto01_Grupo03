@@ -7,20 +7,20 @@ USE grupo03_db;
 -- 1. Tabela: autores
 CREATE TABLE IF NOT EXISTS autores (
     id_autor BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(200) NOT NULL
+    nome VARCHAR(200) NOT NULL UNIQUE
 );
 
 -- 2. Tabela: categorias
 CREATE TABLE IF NOT EXISTS categorias (
     id_categoria BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    nome VARCHAR(100) NOT NULL UNIQUE,
     descricao VARCHAR(255)
 );
 
 -- 3. Tabela: editoras
 CREATE TABLE IF NOT EXISTS editoras (
     id_editora BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(200) NOT NULL
+    nome VARCHAR(200) NOT NULL UNIQUE
 );
 
 -- 4. Tabela: alunos
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS alunos (
     id_aluno BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(200) NOT NULL,
     matricula VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(150),
+    email VARCHAR(150) UNIQUE,
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 

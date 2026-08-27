@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface EditoraRepository extends JpaRepository<Editora, Long> {
     List<Editora> findByNomeContainingIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCaseAndIdNot(String nome, Long id);
 }

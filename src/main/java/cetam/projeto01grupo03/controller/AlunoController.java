@@ -42,27 +42,30 @@ public class AlunoController {
             model.addAttribute("aluno", aluno);
             return "alunos/formulario";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Aluno não encontrando. ");
+            redirectAttributes.addFlashAttribute("mensagemErro", "Aluno não encontrado.");
             return "redirect:/alunos";
         }
     }
 
-
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("aluno") Aluno aluno, Model model, RedirectAttributes redirectAttributes) {
-        if (aluno.getNome() == null || aluno.getNome().trim().isEmpty()) {
-            model.addAttribute("mensagemErro", "o nome do aluno é obrigatório. ");
+        try {
+            alunoService.salvar(aluno);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno salvo com sucesso!");
+            return "redirect:/alunos";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("aluno", aluno);
+            return "alunos/formulario";
+        } catch (DataIntegrityViolationException e) {
+            model.addAttribute("mensagemErro", "Erro de duplicidade: Já existe um aluno com esta matrícula ou e-mail.");
+            model.addAttribute("aluno", aluno);
+            return "alunos/formulario";
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", "Erro ao salvar aluno: " + e.getMessage());
+            model.addAttribute("aluno", aluno);
             return "alunos/formulario";
         }
-
-        if (aluno.getMatricula() == null || aluno.getMatricula().trim().isEmpty()) {
-            model.addAttribute("mensagemErro", "A matrícula do aluno é obrigatória.");
-            return "alunos/formulario";
-        }
-
-        alunoService.salvar(aluno);
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno salvo com sucesso!");
-        return "redirect:/alunos";
     }
 
     @GetMapping("/status/{id}")
@@ -70,7 +73,7 @@ public class AlunoController {
         try {
             Aluno aluno = alunoService.alternarStatus(id);
             String status = Boolean.TRUE.equals(aluno.getAtivo()) ? "ativado" : "inativado";
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno" + status + "com sucesso!");
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno " + status + " com sucesso!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao alterar status do aluno: " + e.getMessage());
         }
@@ -81,12 +84,14 @@ public class AlunoController {
     public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         try {
             alunoService.excluir(id);
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno excluido com sucesso!");
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Aluno excluído com sucesso!");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
         } catch (DataIntegrityViolationException e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Não é possivel excluir o aluno pois tem livros vinculaods a ele.");
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não é possível excluir o aluno pois existem registros vinculados a ele.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao excluir o aluno: " + e.getMessage());
         }
-        return  "redirect:/alunos";
+        return "redirect:/alunos";
     }
 }

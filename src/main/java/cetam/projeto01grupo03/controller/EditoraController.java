@@ -47,14 +47,23 @@ public class EditoraController {
     public String salvar(@ModelAttribute("editora") Editora editora,
                          Model model,
                          RedirectAttributes redirectAttributes) {
-        if (editora.getNome() == null || editora.getNome().trim().isEmpty()){
-            model.addAttribute("mensagemErro", "O nome da editora é obrigatório.");
+        try {
+            editoraService.salvar(editora);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Editora salva com sucesso!");
+            return "redirect:/editoras";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("editora", editora);
+            return "editoras/formulario";
+        } catch (DataIntegrityViolationException e) {
+            model.addAttribute("mensagemErro", "Erro de integridade: Já existe uma editora cadastrada com este nome.");
+            model.addAttribute("editora", editora);
+            return "editoras/formulario";
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", "Erro ao salvar editora: " + e.getMessage());
+            model.addAttribute("editora", editora);
             return "editoras/formulario";
         }
-
-        editoraService.salvar(editora);
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Editora salva com sucesso!");
-        return "redirect:/editoras";
     }
 
     @GetMapping("/excluir/{id}")

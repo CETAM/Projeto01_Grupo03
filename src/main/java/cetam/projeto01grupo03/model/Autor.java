@@ -13,7 +13,7 @@ public class Autor {
     @Column(name = "id_autor")
     private Long id;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, unique = true, length = 200)
     private String nome;
 
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)

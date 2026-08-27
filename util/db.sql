@@ -1,11 +1,11 @@
 create table autores (
 	idAutor int auto_increment primary key,
-    nome varchar(200) not null
+    nome varchar(200) not null unique
 );
 
 create table editoras (
 	idEditora int auto_increment primary key,
-    nome varchar(200) not null
+    nome varchar(200) not null unique
 );
 
 create table livros (
@@ -23,7 +23,7 @@ create table alunos (
 	idAluno int auto_increment primary key,
     nome varchar(200) not null,
     matricula varchar(50) not null unique,
-    email varchar(150) not null
+    email varchar(150) null unique
 );
 
 create table emprestimos (

@@ -44,6 +44,50 @@ public class AlunoService {
 
     @Transactional
     public Aluno salvar(Aluno aluno) {
+        if (aluno.getNome() == null || aluno.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome do aluno é obrigatório.");
+        }
+        if (aluno.getMatricula() == null || aluno.getMatricula().trim().isEmpty()) {
+            throw new IllegalArgumentException("A matrícula do aluno é obrigatória.");
+        }
+
+        aluno.setNome(aluno.getNome().trim());
+        aluno.setMatricula(aluno.getMatricula().trim());
+        if (aluno.getEmail() != null) {
+            aluno.setEmail(aluno.getEmail().trim().toLowerCase());
+            if (aluno.getEmail().isEmpty()) {
+                aluno.setEmail(null);
+            }
+        }
+
+        // Validação de unicidade da matrícula
+        if (aluno.getId() == null) {
+            if (alunoRepository.existsByMatricula(aluno.getMatricula())) {
+                throw new IllegalArgumentException("Já existe um aluno cadastrado com a matrícula '" + aluno.getMatricula() + "'.");
+            }
+        } else {
+            if (alunoRepository.existsByMatriculaAndIdNot(aluno.getMatricula(), aluno.getId())) {
+                throw new IllegalArgumentException("Já existe outro aluno cadastrado com a matrícula '" + aluno.getMatricula() + "'.");
+            }
+        }
+
+        // Validação de unicidade do e-mail (se preenchido)
+        if (aluno.getEmail() != null) {
+            if (aluno.getId() == null) {
+                if (alunoRepository.existsByEmailIgnoreCase(aluno.getEmail())) {
+                    throw new IllegalArgumentException("Já existe um aluno cadastrado com o e-mail '" + aluno.getEmail() + "'.");
+                }
+            } else {
+                if (alunoRepository.existsByEmailIgnoreCaseAndIdNot(aluno.getEmail(), aluno.getId())) {
+                    throw new IllegalArgumentException("Já existe outro aluno cadastrado com o e-mail '" + aluno.getEmail() + "'.");
+                }
+            }
+        }
+
+        if (aluno.getAtivo() == null) {
+            aluno.setAtivo(true);
+        }
+
         return alunoRepository.save(aluno);
     }
 

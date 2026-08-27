@@ -28,7 +28,23 @@ public class EditoraService {
                 .orElseThrow(() -> new IllegalArgumentException("Editora não encontrada com o ID: "+ id));
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public Editora salvar(Editora editora){
+        if (editora.getNome() == null || editora.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome da editora é obrigatório.");
+        }
+        editora.setNome(editora.getNome().trim());
+
+        if (editora.getId() == null) {
+            if (editoraRepository.existsByNomeIgnoreCase(editora.getNome())) {
+                throw new IllegalArgumentException("Já existe uma editora cadastrada com o nome '" + editora.getNome() + "'.");
+            }
+        } else {
+            if (editoraRepository.existsByNomeIgnoreCaseAndIdNot(editora.getNome(), editora.getId())) {
+                throw new IllegalArgumentException("Já existe outra editora cadastrada com o nome '" + editora.getNome() + "'.");
+            }
+        }
+
         return editoraRepository.save(editora);
     }
 

@@ -13,7 +13,7 @@ public class Editora {
     @Column(name = "id_editora")
     private Long id;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, unique = true, length = 200)
     private String nome;
 
     @OneToMany(mappedBy = "editora", cascade = CascadeType.ALL)

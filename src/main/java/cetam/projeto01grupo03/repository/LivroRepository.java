@@ -24,11 +24,17 @@ public interface LivroRepository extends JpaRepository <Livro, Long> {
     @Query("SELECT COALESCE(SUM(l.quantidadeExemplares), 0) FROM Livro l")
     Long sumTotalExemplares();
 
-    //Query que foi ajustada
     @Query("SELECT new cetam.projeto01grupo03.dto.CategoriaDistribuicaoDTO(l.categoria.nome, COUNT(l)) " +
             "FROM Livro l WHERE l.categoria IS NOT NULL " +
             "GROUP BY l.categoria.id, l.categoria.nome " +
             "ORDER BY COUNT(l) DESC")
     List<CategoriaDistribuicaoDTO> findDistribuicaoPorCategoria();
 
+    boolean existsByIsbn(String isbn);
+
+    boolean existsByIsbnAndIdNot(String isbn, Long id);
+
+    boolean existsByTituloIgnoreCaseAndAutorId(String titulo, Long autorId);
+
+    boolean existsByTituloIgnoreCaseAndAutorIdAndIdNot(String titulo, Long autorId, Long id);
 }

@@ -61,21 +61,36 @@ public class LivroController {
         }
     }
 
+    private void carregarCombos(Model model) {
+        model.addAttribute("autores", autorService.listarTodos(null));
+        model.addAttribute("editoras", editoraService.listarTodas(null));
+        model.addAttribute("categorias", categoriaService.listarTodas(null));
+    }
+
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("livro") Livro livro,
                          Model model,
                          RedirectAttributes redirectAttributes) {
-        if (livro.getTitulo() == null || livro.getTitulo().trim().isEmpty()) {
-            model.addAttribute("mensagemErro", "O título do livro é obrigatório.");
-            model.addAttribute("autores", autorService.listarTodos(null));
-            model.addAttribute("editoras", editoraService.listarTodas(null));
-            model.addAttribute("categorias", categoriaService.listarTodas(null));
+        try {
+            livroService.salvar(livro);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Livro salvo com sucesso!");
+            return "redirect:/livros";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            carregarCombos(model);
+            model.addAttribute("livro", livro);
+            return "livros/formulario";
+        } catch (DataIntegrityViolationException e) {
+            model.addAttribute("mensagemErro", "Erro de integridade: Já existe um livro cadastrado com este ISBN.");
+            carregarCombos(model);
+            model.addAttribute("livro", livro);
+            return "livros/formulario";
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", "Erro ao salvar livro: " + e.getMessage());
+            carregarCombos(model);
+            model.addAttribute("livro", livro);
             return "livros/formulario";
         }
-
-        livroService.salvar(livro);
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Livro salvo com sucesso!");
-        return "redirect:/livros";
     }
 
     @GetMapping("/disponibilidade/{id}")

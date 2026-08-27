@@ -12,4 +12,12 @@ public interface AlunoRepository extends JpaRepository <Aluno, Long> {
     Optional<Aluno> findByMatricula(String matricula);
 
     List<Aluno> findByAtivoTrue();
+
+    boolean existsByMatricula(String matricula);
+
+    boolean existsByMatriculaAndIdNot(String matricula, Long id);
+
+    boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
 }

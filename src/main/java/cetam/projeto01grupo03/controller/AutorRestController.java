@@ -44,6 +44,9 @@ public class AutorRestController {
         try {
             Autor salvo = autorService.salvar(autor);
             return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensagem", "Erro ao salvar autor: " + e.getMessage()));
@@ -61,6 +64,9 @@ public class AutorRestController {
             autor.setNome(autorAtualizado.getNome());
             Autor salvo = autorService.salvar(autor);
             return ResponseEntity.ok(salvo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("mensagem", "Erro ao atualizar autor: " + e.getMessage()));

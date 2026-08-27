@@ -6,6 +6,10 @@ import java.util.List;
 
 public interface AutorRepository extends JpaRepository<Autor, Long> {
     List<Autor> findByNomeContainingIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCaseAndIdNot(String nome, Long id);
 }
 
 

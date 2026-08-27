@@ -19,7 +19,7 @@ public class Aluno {
     @Column(nullable = false, unique = true, length = 50)
     private String matricula;
 
-    @Column(length = 150)
+    @Column(length = 150, unique = true)
     private String email;
 
     @Column(nullable = false)
